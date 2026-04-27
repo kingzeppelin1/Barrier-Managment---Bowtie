@@ -1,0 +1,61 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+.next/
+.turbo/
+out/
+dist/
+build/
+
+# Environment
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Coverage
+coverage/
+*.lcov
+
+# Test artifacts
+playwright-report/
+playwright/.cache/
+test-results/
+
+# Cache
+.cache/
+.eslintcache
+.prettiercache
+
+# IDE
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Vercel
+.vercel
+
+# Prisma
+*.db
+*.db-journal
+prisma/migrations/dev.db*
+
+# Misc
+*.tsbuildinfo
+.next-env.d.ts
