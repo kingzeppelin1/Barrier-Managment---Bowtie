@@ -39,7 +39,7 @@ docs/
   prompts/     # 10 sequential Claude Code prompts
   decisions/   # ADRs
   guides/      # CONTRIBUTING etc.
-infra/vercel/  # Vercel monorepo build config
+vercel.json    # Vercel monorepo build config (auto-loaded from repo root)
 .github/       # workflows, CODEOWNERS not-yet-relocated, templates
 ```
 
