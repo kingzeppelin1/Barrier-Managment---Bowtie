@@ -155,6 +155,8 @@ export const BowtieSchema = z.object({
   /** True if a published Bowtie has open changes pending an MOC link. */
   changesPendingMoc: z.boolean().default(false),
   publishedAt: z.string().nullable().default(null),
+  /** Soft-archive — hidden from default lists. Pattern from CLAUDE.md §4.4. */
+  archivedAt: z.string().nullable().optional(),
 });
 export type Bowtie = z.infer<typeof BowtieSchema>;
 
