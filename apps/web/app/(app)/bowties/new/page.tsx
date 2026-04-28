@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Construction, Lock } from 'lucide-react';
+import { Lock } from 'lucide-react';
 
 import { PageHeader } from '@/components/common/page-header';
 import { EmptyState } from '@/components/common/empty-state';
@@ -14,6 +14,8 @@ import { WizardFooter } from '@/components/bowtie/wizard/wizard-footer';
 import { Step1Scope, Step2Hazard, Step3TopEvent } from '@/components/bowtie/wizard/steps-1-3';
 import { Step4Threats, Step5Consequences } from '@/components/bowtie/wizard/steps-4-5';
 import { Step6PreventiveBarriers, Step7MitigativeBarriers } from '@/components/bowtie/wizard/steps-6-7';
+import { Step8DegradationFactors, Step9DegradationControls } from '@/components/bowtie/wizard/steps-8-9';
+import { Step10Risk, Step11Actions, Step12Review } from '@/components/bowtie/wizard/steps-10-12';
 import { selectCurrentRole, useDemoStore } from '@/lib/store';
 import { defaultDraft } from '@/lib/wizard/steps';
 
@@ -94,13 +96,11 @@ export default function NewBowtiePage() {
           {draft.step === 5 && <Step5Consequences draft={draft} />}
           {draft.step === 6 && <Step6PreventiveBarriers draft={draft} />}
           {draft.step === 7 && <Step7MitigativeBarriers draft={draft} />}
-          {draft.step >= 8 && draft.step <= 12 && (
-            <EmptyState
-              icon={Construction}
-              title={`Step ${draft.step} arrives in the next batch`}
-              description="Degradation factors / controls, four-level risk, actions and review/submit are queued for Batch C of Slice 6."
-            />
-          )}
+          {draft.step === 8 && <Step8DegradationFactors draft={draft} />}
+          {draft.step === 9 && <Step9DegradationControls draft={draft} />}
+          {draft.step === 10 && <Step10Risk draft={draft} />}
+          {draft.step === 11 && <Step11Actions draft={draft} />}
+          {draft.step === 12 && <Step12Review draft={draft} />}
         </WizardBody>
         <WizardFooter draft={draft} onSubmit={handleSubmit} submitting={submitting} />
       </WizardShell>
