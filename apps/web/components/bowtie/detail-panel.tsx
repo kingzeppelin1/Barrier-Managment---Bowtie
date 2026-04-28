@@ -79,6 +79,7 @@ function PanelBody({ selected, bowtie }: { selected: SelectedNode; bowtie: Bowti
           actions={store.actions}
           verifications={store.verifications}
           standards={store.performanceStandards}
+          aiSuggestions={store.aiSuggestions}
         />
       );
     case 'threat':
@@ -227,12 +228,14 @@ function BarrierPanel({
   actions,
   verifications,
   standards,
+  aiSuggestions,
 }: {
   barrier: Barrier | undefined;
   users: User[];
   actions: Action[];
   verifications: Verification[];
   standards: PerformanceStandard[];
+  aiSuggestions: AiSuggestion[];
 }) {
   if (!barrier) return <NotFound kind="Barrier" />;
   const owner = users.find((u) => u.id === barrier.ownerId);
@@ -244,17 +247,8 @@ function BarrierPanel({
   const days = relativeDays(barrier.nextVerificationDue);
   const overdue = days !== null && days < 0;
 
-  // AI quality check — heuristic preview, mirrors what Slice 10 will compute.
-  const aiChecks: { label: string; tone: 'green' | 'yellow' | 'red' }[] = [];
-  if (!barrier.ownerId) aiChecks.push({ label: 'Missing barrier owner', tone: 'red' });
-  if (overdue) aiChecks.push({ label: 'Verification overdue', tone: 'red' });
-  if (barrier.openCriticalFindings > 0)
-    aiChecks.push({ label: `${barrier.openCriticalFindings} open critical finding(s)`, tone: 'red' });
-  if (barrier.failedTests > 0) aiChecks.push({ label: `${barrier.failedTests} failed critical test(s)`, tone: 'red' });
-  if (barrier.criticality === 'critical' && !standard)
-    aiChecks.push({ label: 'No performance standard linked to a critical barrier', tone: 'yellow' });
-  if (aiChecks.length === 0)
-    aiChecks.push({ label: 'No AI quality issues detected', tone: 'green' });
+  const coachForBarrier = aiSuggestions.filter((s) => s.context.targetId === barrier.id);
+  const pendingCoach = coachForBarrier.filter((s) => s.reviewerDecision === null);
 
   return (
     <PanelShell
@@ -398,38 +392,81 @@ function BarrierPanel({
       <Separator />
 
       <div>
-        <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-          <Sparkles className="h-3 w-3" /> AI quality check (preview)
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+            <Sparkles className="h-3 w-3 text-status-blue" /> AI Coach for this barrier
+          </div>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-6 gap-1 px-2 text-xs"
+            onClick={() => {
+              if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('bowtie-coach-toggle'));
+              }
+            }}
+          >
+            Open Coach
+          </Button>
         </div>
-        <ul className="mt-2 space-y-1.5">
-          {aiChecks.map((c, idx) => (
-            <li
-              key={idx}
-              className={cn(
-                'flex items-center gap-2 rounded-md border p-2 text-xs',
-                c.tone === 'red' && 'border-status-red/30 bg-status-red/5',
-                c.tone === 'yellow' && 'border-status-yellow/30 bg-status-yellow/5',
-                c.tone === 'green' && 'border-status-green/30 bg-status-green/5',
-              )}
-            >
-              {c.tone === 'green' ? (
-                <CheckCircle2 className="h-3.5 w-3.5 text-status-green" />
-              ) : (
-                <AlertTriangle
+        {coachForBarrier.length === 0 ? (
+          <div className="mt-2 flex items-center gap-2 rounded-md border border-status-green/30 bg-status-green/5 p-2 text-xs">
+            <CheckCircle2 className="h-3.5 w-3.5 text-status-green" />
+            <span>No suggestions for this barrier.</span>
+          </div>
+        ) : (
+          <ul className="mt-2 space-y-1.5">
+            {coachForBarrier.map((s) => {
+              const tone =
+                s.reviewerDecision === 'accepted'
+                  ? 'green'
+                  : s.reviewerDecision === 'rejected'
+                    ? 'gray'
+                    : s.output.severity === 'blocker'
+                      ? 'red'
+                      : 'yellow';
+              return (
+                <li
+                  key={s.id}
                   className={cn(
-                    'h-3.5 w-3.5',
-                    c.tone === 'red' ? 'text-status-red' : 'text-status-yellow',
+                    'flex items-start gap-2 rounded-md border p-2 text-xs',
+                    tone === 'red' && 'border-status-red/30 bg-status-red/5',
+                    tone === 'yellow' && 'border-status-yellow/30 bg-status-yellow/5',
+                    tone === 'green' && 'border-status-green/30 bg-status-green/5',
+                    tone === 'gray' && 'border-muted bg-muted/30',
                   )}
-                />
-              )}
-              <span>{c.label}</span>
-            </li>
-          ))}
-        </ul>
-        <div className="mt-2 text-[11px] italic text-muted-foreground">
-          Full AI Coach panel arrives in Slice 10. Suggestions remain advisory — every accepted suggestion
-          requires a named human reviewer.
-        </div>
+                >
+                  {s.reviewerDecision === 'accepted' ? (
+                    <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 text-status-green" />
+                  ) : (
+                    <AlertTriangle
+                      className={cn(
+                        'mt-0.5 h-3.5 w-3.5',
+                        s.output.severity === 'blocker'
+                          ? 'text-status-red'
+                          : 'text-status-yellow',
+                      )}
+                    />
+                  )}
+                  <div className="flex-1">
+                    <div className="font-medium">{s.output.title}</div>
+                    {s.reviewerDecision === null && (
+                      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                        Pending review
+                      </div>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+        {pendingCoach.length > 0 && (
+          <div className="mt-2 text-[11px] italic text-muted-foreground">
+            {pendingCoach.length} pending suggestion{pendingCoach.length === 1 ? '' : 's'} block the
+            approval gate until reviewed.
+          </div>
+        )}
       </div>
     </PanelShell>
   );

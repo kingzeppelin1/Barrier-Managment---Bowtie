@@ -28,15 +28,20 @@ export function PrintShell({ title, subtitle, meta, children }: PrintShellProps)
             <ArrowLeft className="h-4 w-4" /> Back to reports
           </Link>
         </Button>
-        <Button
-          size="sm"
-          onClick={() => {
-            if (typeof window !== 'undefined') window.print();
-          }}
-          className="gap-1"
-        >
-          <Printer className="h-4 w-4" /> Print / Save as PDF
-        </Button>
+        <div className="flex items-center gap-2">
+          <span className="hidden text-[11px] text-muted-foreground sm:inline">
+            In the print dialog, choose <span className="font-medium">Save as PDF</span> as the destination.
+          </span>
+          <Button
+            size="sm"
+            onClick={() => {
+              if (typeof window !== 'undefined') window.print();
+            }}
+            className="gap-1"
+          >
+            <Printer className="h-4 w-4" /> Print / Save as PDF
+          </Button>
+        </div>
       </div>
 
       <header className="mb-6 flex items-start justify-between gap-4 border-b pb-4">

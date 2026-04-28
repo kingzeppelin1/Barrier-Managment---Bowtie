@@ -61,6 +61,52 @@ pnpm dev --filter worker      # logs "worker ready (env=development)"
 
 `pnpm build` runs the full Turborepo pipeline (`apps/web` produces a Next.js build; packages typecheck).
 
+## Run the demo locally
+
+The demo is fully client-side — no database, no API keys, no backend services.
+Everything lives in the browser via `localStorage`.
+
+```bash
+pnpm install
+pnpm dev --filter web
+```
+
+Then open [http://localhost:3000](http://localhost:3000). The app redirects to
+`/dashboard` and seeds three industry scenarios (offshore platform, chemical
+plant, hospital) on first load.
+
+A few things to try:
+
+- **Demo Tour** — top-bar button. Walks the golden path Dashboard → Bowtie
+  Workspace → AI Coach → Action in about a minute.
+- **Persona switcher** — top-bar dropdown. Auditor is read-only; the rest
+  have different edit affordances.
+- **Reset demo data** — `/settings`. Restores the seeded scenarios.
+- **Reports** — `/reports`. Each card opens a print-optimised view in a new
+  tab; use the browser's "Save as PDF" from the print dialog.
+
+## Deploy to Vercel
+
+The repo is already configured for Vercel — root `vercel.json` builds
+`apps/web` via Turborepo.
+
+1. **Push the branch to GitHub** (if not already): `git push origin <branch>`.
+2. **Vercel → Import** the repository. Vercel auto-detects Next.js.
+3. **Build settings** are picked up from `vercel.json`:
+   - Build command: `pnpm turbo run build --filter=web`
+   - Install command: `pnpm install --frozen-lockfile`
+   - Output directory: `apps/web/.next`
+   - Framework: Next.js
+4. **No environment variables required** for the demo build. Optional:
+   - `AI_PROVIDER` — defaults to `mock`. Setting it to `anthropic` requires
+     an `ANTHROPIC_API_KEY` and the `AnthropicAIProvider` to be implemented
+     (currently a sketch).
+5. **Node + pnpm versions** are pinned via root `package.json`
+   (`packageManager: pnpm@9.15.0`) and `.nvmrc` (`20`).
+
+The first deploy takes ~3 minutes. Subsequent deploys cache the install and
+Turborepo layers and finish in ~90 seconds.
+
 ## Spec documents
 
 The full spec (split from the original Word brief) lives under [`docs/`](docs/):
