@@ -12,6 +12,8 @@ import { WizardShell } from '@/components/bowtie/wizard/wizard-shell';
 import { WizardBody } from '@/components/bowtie/wizard/wizard-body';
 import { WizardFooter } from '@/components/bowtie/wizard/wizard-footer';
 import { Step1Scope, Step2Hazard, Step3TopEvent } from '@/components/bowtie/wizard/steps-1-3';
+import { Step4Threats, Step5Consequences } from '@/components/bowtie/wizard/steps-4-5';
+import { Step6PreventiveBarriers, Step7MitigativeBarriers } from '@/components/bowtie/wizard/steps-6-7';
 import { selectCurrentRole, useDemoStore } from '@/lib/store';
 import { defaultDraft } from '@/lib/wizard/steps';
 
@@ -88,11 +90,15 @@ export default function NewBowtiePage() {
           {draft.step === 1 && <Step1Scope draft={draft} />}
           {draft.step === 2 && <Step2Hazard draft={draft} />}
           {draft.step === 3 && <Step3TopEvent draft={draft} />}
-          {draft.step >= 4 && draft.step <= 12 && (
+          {draft.step === 4 && <Step4Threats draft={draft} />}
+          {draft.step === 5 && <Step5Consequences draft={draft} />}
+          {draft.step === 6 && <Step6PreventiveBarriers draft={draft} />}
+          {draft.step === 7 && <Step7MitigativeBarriers draft={draft} />}
+          {draft.step >= 8 && draft.step <= 12 && (
             <EmptyState
               icon={Construction}
               title={`Step ${draft.step} arrives in the next batch`}
-              description="The remaining steps (Threats → Consequences → Barriers → DF/DC → Risk → Actions → Review) are queued for upcoming batches of Slice 6."
+              description="Degradation factors / controls, four-level risk, actions and review/submit are queued for Batch C of Slice 6."
             />
           )}
         </WizardBody>
