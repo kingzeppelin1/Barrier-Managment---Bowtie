@@ -140,8 +140,11 @@ export const ConsequenceNode = memo(ConsequenceNodeImpl);
 // -- Barrier --------------------------------------------------------------
 function BarrierNodeImpl({ data, selected }: NP<BarrierNodeData>) {
   const { barrier } = data;
+  // Demo Tour hooks: tag the offshore PTW barrier so the tour can highlight it.
+  const tourTag = barrier.id === 'br-off-003' ? 'ptw-node' : undefined;
   return (
     <div
+      data-tour={tourTag}
       className={cn(
         'group relative flex w-44 flex-col rounded-md border bg-card text-left shadow-sm ring-1 ring-transparent transition-all',
         'hover:border-foreground/30',

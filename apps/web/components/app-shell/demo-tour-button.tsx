@@ -2,26 +2,17 @@
 
 import { Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useTour } from '@/lib/tour/use-tour';
 
 /**
- * Placeholder Demo Tour trigger. Slice 11 will wire this to driver.js
- * with the golden-path walkthrough. Until then it shows a friendly toast-
- * less alert so the affordance is discoverable.
+ * Demo Tour trigger. Wired to driver.js via lib/tour. Always visible in
+ * the topbar; Settings has a "Restart Tour" button that dispatches the
+ * same custom event.
  */
 export function DemoTourButton() {
+  const { start } = useTour();
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      className="gap-2"
-      onClick={() => {
-        if (typeof window !== 'undefined') {
-          window.alert(
-            'Demo Tour will guide you Dashboard → Bowtie Workspace → AI Coach → Action.\n\nWiring to driver.js arrives in Slice 11.',
-          );
-        }
-      }}
-    >
+    <Button variant="outline" size="sm" className="gap-2" onClick={start}>
       <Sparkles className="h-4 w-4" />
       Demo Tour
     </Button>

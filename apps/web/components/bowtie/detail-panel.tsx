@@ -187,10 +187,12 @@ function Callout({
   tone,
   title,
   children,
+  tourTag,
 }: {
   tone: 'red' | 'yellow' | 'blue' | 'purple';
   title: string;
   children: React.ReactNode;
+  tourTag?: string;
 }) {
   const TONE_CLASS = {
     red: 'border-status-red/30 bg-status-red/5 text-status-red',
@@ -199,7 +201,7 @@ function Callout({
     purple: 'border-status-purple/30 bg-status-purple/5 text-status-purple',
   } as const;
   return (
-    <div className={cn('rounded-md border p-3 text-xs', TONE_CLASS[tone])}>
+    <div data-tour={tourTag} className={cn('rounded-md border p-3 text-xs', TONE_CLASS[tone])}>
       <div className="flex items-center gap-1.5 font-semibold">
         <AlertTriangle className="h-3.5 w-3.5" />
         <span>{title}</span>
@@ -269,7 +271,7 @@ function BarrierPanel({
       }
     >
       {barrier.withCompensatory && barrier.status === 'red' && (
-        <Callout tone="red" title="Compensated control">
+        <Callout tone="red" title="Compensated control" tourTag="compensatory-callout">
           Risk acceptance has been documented and compensatory measures are in place, but the barrier
           remains degraded. Per methodology, compensated red stays red.
           {barrier.compensatoryNotes && <div className="mt-1 italic">{barrier.compensatoryNotes}</div>}

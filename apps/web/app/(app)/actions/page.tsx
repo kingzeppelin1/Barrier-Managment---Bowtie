@@ -116,7 +116,7 @@ export default function ActionsPage() {
             }
           />
         ) : (
-          <div className="rounded-lg border">
+          <div data-tour="actions-table" className="rounded-lg border">
             <Table>
               <TableHeader>
                 <TableRow>

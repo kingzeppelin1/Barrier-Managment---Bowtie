@@ -71,7 +71,10 @@ export function AlertBanner({ barriers, actions, verifications }: AlertBannerPro
   const headline = `${alerts.length} item${alerts.length === 1 ? '' : 's'} need attention`;
 
   return (
-    <div className="flex items-start gap-3 rounded-lg border border-status-red/30 bg-status-red/5 p-4">
+    <div
+      data-tour="dashboard-alert"
+      className="flex items-start gap-3 rounded-lg border border-status-red/30 bg-status-red/5 p-4"
+    >
       <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-status-red/15 text-status-red">
         <AlertTriangle className="h-4 w-4" />
       </div>

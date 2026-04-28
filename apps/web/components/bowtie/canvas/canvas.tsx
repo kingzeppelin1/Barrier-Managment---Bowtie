@@ -44,7 +44,7 @@ export function BowtieCanvas({ onSelect, selectedId, ...input }: BowtieCanvasPro
   };
 
   return (
-    <div className="h-full w-full">
+    <div data-tour="canvas" className="h-full w-full">
       <ReactFlow
         nodes={decoratedNodes}
         edges={edges}

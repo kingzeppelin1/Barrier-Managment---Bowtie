@@ -44,6 +44,7 @@ export function CoachTrigger() {
 
   return (
     <Button
+      data-tour="coach-badge"
       variant="outline"
       size="sm"
       className="gap-2"

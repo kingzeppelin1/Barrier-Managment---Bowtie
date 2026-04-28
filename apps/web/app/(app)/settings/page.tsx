@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { RotateCcw, Settings as SettingsIcon, Sparkles } from 'lucide-react';
+import { Play, RotateCcw, Settings as SettingsIcon, Sparkles } from 'lucide-react';
 
 import { PageHeader } from '@/components/common/page-header';
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card';
@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { useDemoStore } from '@/lib/store';
 import { ROLE_LABEL, ROLE_DESCRIPTION } from '@/lib/rbac';
 import { getAIProviderName } from '@/lib/ai';
+import { dispatchTourStart } from '@/lib/tour/use-tour';
 import type { Role } from '@bowtie/shared';
 
 const ROLES: Role[] = ['risk_manager', 'barrier_owner', 'approver', 'auditor'];
@@ -79,6 +80,22 @@ export default function SettingsPage() {
                 </li>
               ))}
             </ul>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="space-y-3 p-4">
+            <div className="flex items-center gap-2">
+              <Play className="h-4 w-4 text-muted-foreground" />
+              <CardTitle>Demo tools</CardTitle>
+            </div>
+            <CardDescription>
+              Run the guided walkthrough — Dashboard → Bowtie Workspace → AI Coach → Action.
+              Takes about a minute. Will create a demo follow-up Action; reset above to revert.
+            </CardDescription>
+            <Button size="sm" variant="outline" className="gap-2" onClick={() => dispatchTourStart()}>
+              <Play className="h-4 w-4" /> Restart Demo Tour
+            </Button>
           </CardContent>
         </Card>
 

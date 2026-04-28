@@ -243,7 +243,7 @@ export const OFFSHORE_BARRIERS: Barrier[] = [
     name: 'Active fire suppression — deluge',
     type: 'mitigative',
     function: 'hardware',
-    criticality: 'high',
+    criticality: 'critical',
     ownerId: 'u-bo-001',
     description: 'Topsides deluge with seawater lift pumps (2x100%).',
     performanceStandardId: null,

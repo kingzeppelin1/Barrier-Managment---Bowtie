@@ -29,8 +29,14 @@ export function SuggestionCard({ suggestion, readOnly, onAccept, onReject, onDef
         ? 'yellow'
         : 'blue';
 
+  // Tour tag: deterministic stale_verification suggestion on the offshore deluge.
+  const tourTag = suggestion.id === 'ai-mock-bt-off-001-stale_verification-b-br-off-007'
+    ? 'suggestion-stale-deluge'
+    : undefined;
+
   return (
     <div
+      data-tour={tourTag}
       className={cn(
         'rounded-md border bg-card p-3 text-sm shadow-sm',
         decided && 'opacity-70',
@@ -134,7 +140,7 @@ export function SuggestionCard({ suggestion, readOnly, onAccept, onReject, onDef
               <Button size="sm" variant="outline" onClick={() => setRejectMode(true)} className="gap-1">
                 <X className="h-3.5 w-3.5" /> Reject
               </Button>
-              <Button size="sm" onClick={onAccept} className="gap-1">
+              <Button data-tour="accept-btn" size="sm" onClick={onAccept} className="gap-1">
                 <Check className="h-3.5 w-3.5" /> Accept
               </Button>
             </div>
