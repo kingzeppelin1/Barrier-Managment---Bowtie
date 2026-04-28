@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/common/empty-state';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BowtieCanvas, type SelectedNode } from '@/components/bowtie/canvas/canvas';
+import { DetailPanel } from '@/components/bowtie/detail-panel';
 import { useDemoStore } from '@/lib/store';
 
 export default function BowtieWorkspacePage({ params }: { params: Promise<{ id: string }> }) {
@@ -98,6 +99,7 @@ export default function BowtieWorkspacePage({ params }: { params: Promise<{ id: 
           />
         )}
       </div>
+      <DetailPanel selected={selected} bowtie={bowtie} onClose={() => setSelected(null)} />
     </>
   );
 }
