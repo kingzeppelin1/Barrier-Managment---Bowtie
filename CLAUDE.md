@@ -1,195 +1,226 @@
-# Sprint 1 Backlog — Foundation
+# CLAUDE.md — Operating Manual for Claude Code
 
-**Sprint goal:** Stand up the monorepo, multi-tenant database, auth, audit log infrastructure, and seed data — so that Sprint 2 can start building Bowtie domain logic on a solid foundation.
-
-**Duration:** 2 weeks.
-**Team assumption:** 2–3 engineers + 1 reviewer (or Claude Code + 1 human reviewer).
-**Definition of "done":** Code merged to `main`, CI green, deployed to a Vercel preview, smoke-tested.
+You are Claude Code, working on the **Barrier Management — Bowtie** SaaS module. This file is the first thing you read in every session. It points to the authoritative documents, the guardrails you must respect, and the workflows you should follow.
 
 ---
 
-## Sprint capacity
+## 1. Read these first (every session, every task)
 
-Story points use Fibonacci 1–13. Capacity guideline for a 2-engineer sprint: ~30 points. Below totals 28.
+In order. Don't skip.
 
----
+1. This file (`CLAUDE.md`) — your operating manual.
+2. [`docs/01_PRODUCT_SPEC.md`](docs/01_PRODUCT_SPEC.md) — vision, scope, FRs, NFRs.
+3. [`docs/02_DATA_MODEL.md`](docs/02_DATA_MODEL.md) — entities and relationships.
+4. [`docs/03_WORKFLOWS_AND_VALIDATION.md`](docs/03_WORKFLOWS_AND_VALIDATION.md) — state machines, validation rules, RBAC.
+5. [`docs/08_PACKAGE_STRUCTURE.md`](docs/08_PACKAGE_STRUCTURE.md) — repo layout and stack decisions.
 
-## Stories
+For UI work, also read [`docs/04_UI_UX_AND_REPORTS.md`](docs/04_UI_UX_AND_REPORTS.md).
+For AI work, also read [`docs/07_AI_AGENT.md`](docs/07_AI_AGENT.md).
+For acceptance criteria, also read [`docs/05_ARCHITECTURE_SECURITY_ACCEPTANCE.md`](docs/05_ARCHITECTURE_SECURITY_ACCEPTANCE.md).
 
-### S1-01 — Repository bootstrap (5 pts)
-
-**As** the team
-**I want** a working pnpm + Turborepo monorepo with all apps and packages scaffolded
-**So that** every subsequent story has a place to land code
-
-**Acceptance criteria:**
-- [ ] Monorepo created with `pnpm-workspace.yaml` listing `apps/*` and `packages/*`.
-- [ ] Turborepo configured with `build`, `dev`, `lint`, `test`, `typecheck` pipelines.
-- [ ] Path aliases per [`08_PACKAGE_STRUCTURE.md`](08_PACKAGE_STRUCTURE.md) §5 work in all apps.
-- [ ] `apps/web` is a Next.js 15 (App Router) app that boots and renders a "Hello" page.
-- [ ] `apps/worker` is a Node service that logs "worker ready".
-- [ ] `packages/shared`, `packages/ui`, `packages/methodology`, `packages/config` exist with empty index files and a passing test each.
-- [ ] `pnpm install`, `pnpm dev`, `pnpm build`, `pnpm lint`, `pnpm typecheck`, `pnpm test` all succeed.
-- [ ] README placeholder at root + each app/package.
-
-**Prompt:** [`prompts/01-foundation.md`](prompts/01-foundation.md)
+**The documents are the source of truth.** If code disagrees with the documents, the documents win unless an ADR in [`docs/decisions/`](docs/decisions/) explicitly records the deviation.
 
 ---
 
-### S1-02 — Vercel deployment + preview URLs (3 pts)
+## 2. Methodology guardrails — never weaken these
 
-**As** a reviewer
-**I want** every PR to deploy a preview to Vercel
-**So that** I can visually verify changes before merging
+These are non-negotiable. They are how this product creates safety value, and breaking them creates real-world risk.
 
-**Acceptance criteria:**
-- [ ] `apps/web` linked to a Vercel project.
-- [ ] `vercel.json` in `infra/vercel/` configured for monorepo build.
-- [ ] GitHub Action `.github/workflows/deploy-preview.yml` posts the preview URL on PR.
-- [ ] Production deploy from `main` is blocked behind manual approval (Vercel "Production" environment + GitHub Environment protection).
+1. **Bowtie approval gate is enforced server-side.** Every Approval transition runs the full structural rules in `03_WORKFLOWS_AND_VALIDATION.md` §2.2 + the 8-criteria barrier quality gate in §2.3. No bypass via UI, API, or admin override.
 
----
+2. **6-stage approval lifecycle cannot be skipped.** Draft → Internal Review → SME Review → Risk Manager Review → Approved → Published. Each stage requires the right role and (for Approve / Publish) step-up MFA.
 
-### S1-03 — Database, multi-tenancy, RLS (8 pts)
+3. **Approved/Published Bowties are immutable.** Edits require an MOC link OR a tenant config that allows non-substantive (cosmetic) edits. Determine which via diff classification.
 
-**As** the platform
-**I want** Postgres with Prisma, tenant scoping, and Row-Level Security enforced at the database level
-**So that** cross-tenant data leakage is impossible even if application code has a bug
+4. **Terminology:** **Degradation Factor** and **Degradation Control**. Never "Escalation Factor" or "EFB". The spec is aligned with the current CCPS/EI / CGE methodology corpus.
 
-**Acceptance criteria:**
-- [ ] Postgres 16 connected (Vercel Postgres / Neon / Supabase).
-- [ ] `prisma/schema.prisma` includes `tenant`, `user`, `role`, `role_assignment`, `audit_log` (this story scope only — full schema in S1-05).
-- [ ] Every tenant-scoped table has `tenant_id` not-null FK.
-- [ ] Postgres RLS policy on every tenant-scoped table: `USING (tenant_id = current_setting('app.tenant_id')::uuid)`.
-- [ ] Prisma client wrapped to set `app.tenant_id` per request via `SET LOCAL`.
-- [ ] Test: a query made with tenant A's context cannot read tenant B's rows (positive + negative test).
-- [ ] Test: bypassing the wrapper to call `prisma.<model>.findMany()` directly returns 0 rows due to RLS.
-- [ ] `pnpm db:migrate` and `pnpm db:seed` work locally.
+5. **Four-level risk:** Inherent → Current → Residual → Target. Two-level shortcuts (inherent + residual only) are forbidden.
 
-**Prompt:** [`prompts/02-database-and-tenancy.md`](prompts/02-database-and-tenancy.md)
+6. **Documented gap pattern is allowed** but only with: a `gap_record` carrying owner + target_resolution_date + linked Action. A bare missing barrier never passes the approval gate.
+
+7. **Numerical barrier health (0–100)** is the canonical metric. The pure-function calculator in `packages/methodology` is the single source. Automatic floors for critical barriers are not optional.
+
+8. **Compensated red stays red.** A Red barrier with documented compensatory measures is rendered as Red with a `with_compensatory` flag. Never auto-promoted to Green or Yellow.
+
+9. **Audit log is append-only and immutable.** Every state-changing action writes a row with actor, timestamp, RFC 6902 patch diff, comment, IP, request id. No application path may edit or delete audit log rows.
+
+10. **Cross-tenant isolation is defense-in-depth.** Postgres RLS + ORM filter. Cross-tenant access returns 404, not 403, and emits a security event.
 
 ---
 
-### S1-04 — Authentication + role-based access (5 pts)
+## 3. AI Agent guardrails
 
-**As** a user
-**I want** to log in with credentials (and OIDC-ready scaffold)
-**So that** I can access the app and the system knows my tenant + roles
+The Bowtie Assistant is **advisory only**. Never weaken these:
 
-**Acceptance criteria:**
-- [ ] Auth.js (NextAuth) configured with Credentials provider for dev.
-- [ ] OIDC provider scaffolded (config-driven; can be enabled per tenant).
-- [ ] Login + Logout pages.
-- [ ] Middleware in `apps/web/middleware.ts` resolves the user, attaches `tenantId` and `roleAssignments` to the request.
-- [ ] `withRBAC(permission, scope)` helper for route handlers; throws `404` (not `403`) on cross-tenant access.
-- [ ] Step-up auth helper scaffolded (placeholder; full TOTP/WebAuthn in a later sprint).
-- [ ] Test: an unauthenticated request to `/api/v1/*` returns 401.
-- [ ] Test: a user without permission `bowtie:read` cannot list bowties (403).
-- [ ] Test: a user from tenant A querying a tenant B record sees 404.
-
-**Prompt:** [`prompts/04-auth-rbac.md`](prompts/04-auth-rbac.md)
+1. AI never autonomously creates, modifies, or approves safety-critical content. Every AI suggestion requires a named human reviewer to accept it.
+2. Every AI invocation persists an `ai_suggestion` row with `prompt_hash`, `model_id`, full structured output.
+3. Every accepted suggestion writes `ai_origin_suggestion_id` on the destination entity.
+4. Approval gate **blocks** when any element on the Bowtie has `ai_origin_suggestion_id` pointing to a suggestion whose `reviewer_decision` is null.
+5. AI responses must conform strictly to the canonical 6-field schema in `07_AI_AGENT.md` §4. Malformed responses → reject, retry once, then surface error to user. No silent failure.
+6. AI never sees data outside the invoking user's permission scope. Verify with positive and negative integration tests.
+7. A tenant may disable the AI agent entirely; the rest of the product must remain fully functional.
 
 ---
 
-### S1-05 — Full Prisma schema (8 pts)
+## 4. Engineering guardrails
 
-**As** the team
-**I want** the complete Prisma schema covering every entity in [`02_DATA_MODEL.md`](02_DATA_MODEL.md)
-**So that** Sprint 2 can build endpoints against a stable schema
+### 4.1 Stack — fixed for MVP
 
-**Acceptance criteria:**
-- [ ] `prisma/schema.prisma` includes every entity from [`02_DATA_MODEL.md`](02_DATA_MODEL.md): hazard, top_event, bowtie, threat, consequence, barrier, degradation_factor, degradation_control, gap_record, performance_standard, verification_regime, verification_task, verification_evidence, risk_matrix, risk_assessment, risk_register_entry, bowtie_risk_link, incident_bowtie_link, moc_bowtie_link, workshop_session, workshop_decision, workshop_parking_item, ai_suggestion, action, document_link, audit_log, comment.
-- [ ] All enums declared per spec (6-stage bowtie state, 4-level risk, 11 barrier functions, 6 colors, etc.).
-- [ ] Composite indexes per [`02_DATA_MODEL.md`](02_DATA_MODEL.md) §11.
-- [ ] Soft delete via `deleted_at` on every entity.
-- [ ] Migration generated and committed.
-- [ ] Seed script creates: 1 demo tenant, default 5×5 risk matrix, all enum-backed reference data, baseline roles, one fully populated example Bowtie (3 threats, 2 consequences, 6 barriers, 2 DFs, 2 DCs, 1 gap_record, 4-level risk per consequence).
-- [ ] `pnpm db:reset && pnpm db:seed` produces the same result deterministically.
+- **Web + API:** Next.js 15 App Router (Route Handlers for API).
+- **Database:** Postgres + Prisma (Vercel Postgres / Neon / Supabase).
+- **Auth:** Auth.js (NextAuth) — credentials, OIDC, SAML.
+- **Queues:** Upstash Redis + BullMQ.
+- **Worker:** Separate `apps/worker` deployed to Railway / Fly / Render.
+- **Real-time:** Liveblocks (managed Yjs) for MVP; self-hosted y-websocket optional.
+- **AI:** Anthropic Claude via API route in `apps/web`.
+- **Storage:** Vercel Blob for evidence files.
 
-**Prompt:** [`prompts/03-domain-schema.md`](prompts/03-domain-schema.md)
+Don't introduce new frameworks or services without an ADR.
 
----
+### 4.2 Repo conventions
 
-### S1-06 — Audit log infrastructure (5 pts)
+- **Monorepo:** pnpm workspaces + Turborepo.
+- **Imports:** absolute paths via `@bowtie/*` aliases (configured in `packages/config`).
+- **Schemas:** define once in `packages/shared` (zod), generate TypeScript types from there.
+- **Domain logic:** put pure functions in `packages/methodology`. They must be deterministic, fully tested, no I/O.
+- **API routes:** thin controllers in `apps/web/app/api/**`. Push business logic to service classes in `apps/web/lib/services/`. Push pure logic to `packages/methodology`.
+- **Database access:** through Prisma client wrapped in repository functions in `apps/web/lib/repos/`. Never call Prisma directly from a route handler.
+- **Audit:** every mutation goes through the `withAudit()` wrapper. If you find yourself writing a mutation outside the wrapper, stop and use the wrapper.
 
-**As** a compliance officer
-**I want** every state-changing action to write an immutable audit row
-**So that** we can answer "who changed what and when" for any record forever
+### 4.3 Testing — required, not optional
 
-**Acceptance criteria:**
-- [ ] `withAudit(action, entityType, fn)` wrapper in `apps/web/lib/audit/`.
-- [ ] Wrapper computes RFC 6902 JSON Patch between before/after and stores it.
-- [ ] Audit row includes: tenant_id, user_id, request_id, ip_address, action, entity_type, entity_id, before_hash, after_hash, patch, comment, created_at.
-- [ ] Postgres trigger or app-layer guard prevents UPDATE/DELETE on `audit_log`.
-- [ ] Test: a CRUD operation produces exactly one audit row with a valid RFC 6902 patch.
-- [ ] Test: attempting to UPDATE an audit_log row fails.
-- [ ] `GET /api/v1/audit-log?entity_type=&entity_id=` returns the history for that entity, paginated.
+For every feature you implement, deliver:
 
----
+- **Unit tests** — pure functions in `packages/methodology` get 100% branch coverage.
+- **Integration tests** — every API route has happy-path + at least one validation-failure path + at least one RBAC-rejection path.
+- **E2E tests** — Playwright. Required for every UI feature in the MVP backlog. At minimum: the happy path of the user story.
+- **Cross-tenant negative tests** — for every list/read endpoint, test that a user from tenant B cannot see tenant A's data. Asserts 404 (not 403).
+- **Approval-gate tests** — for any endpoint that depends on Bowtie state, test the rejection path when state is wrong.
 
-### S1-07 — Shared schemas and methodology package skeleton (3 pts)
+Run `pnpm test` and `pnpm test:e2e` before committing. CI will reject PRs that drop coverage.
 
-**As** the team
-**I want** the canonical zod schemas and a stub for the methodology package
-**So that** API and UI share types, and Sprint 2 can land the first pure functions
+### 4.4 Database conventions
 
-**Acceptance criteria:**
-- [ ] `packages/shared/src/schemas/` has zod schemas for: `tenant`, `user`, `role`, `audit-log`, `ai-suggestion` (canonical 6-field schema).
-- [ ] All schemas re-exported from `@bowtie/shared`.
-- [ ] `packages/methodology/src/index.ts` exports stub `calculateBarrierHealth` returning a fixed value with a TODO marker (real implementation in Sprint 3).
-- [ ] `packages/methodology` has its own vitest config and a passing test.
-- [ ] CI enforces: any change to `packages/methodology` requires a test in the same PR.
+- Every table: `id` (uuid PK), `tenant_id`, `created_at`, `updated_at`, `created_by`, `updated_by`, `deleted_at` (soft delete).
+- Every tenant-scoped table: RLS policy enforcing `tenant_id = current_setting('app.tenant_id')::uuid`.
+- Every migration: reviewed, one logical change per file, named `<timestamp>_<verb>_<noun>.sql`.
+- Never destructive migrations on production data without an ADR + dry-run on a snapshot.
 
----
+### 4.5 Security — non-negotiable
 
-### S1-08 — CI/CD pipelines (3 pts)
+- TLS 1.3 in transit, AES-256 at rest. Vercel handles transit; configure encrypted-at-rest on Vercel Postgres / Neon / Supabase.
+- Secrets in Vercel env vars / Doppler / 1Password Connect — never in the repo.
+- Step-up MFA for: approve, publish, sign verification, accept ALARP, modify tenant settings.
+- Rate-limit auth endpoints. Cap evidence-upload size at 50 MB per file (config).
+- All CSP headers configured via Next.js middleware. No inline scripts unless nonce-tagged.
+- Webhook delivery is HMAC-SHA256 signed with a per-tenant secret.
 
-**As** the team
-**I want** automated checks on every PR
-**So that** broken code can't reach `main`
+### 4.6 Performance
 
-**Acceptance criteria:**
-- [ ] `.github/workflows/ci.yml` runs lint, typecheck, test:unit, test:integration, build.
-- [ ] Integration tests use Testcontainers Postgres.
-- [ ] Coverage report uploaded to Codecov; budget enforced for `packages/methodology` (≥ 95%).
-- [ ] PR blocked if CI fails.
-- [ ] CODEOWNERS file requires a review for `docs/` changes.
-- [ ] Dependabot configured for npm + GitHub Actions.
+- Server Components by default. Client Components only when needed (forms, canvas, real-time).
+- Lighthouse CI budget: LCP < 2.5s, INP < 200ms, CLS < 0.1, TBT < 200ms.
+- Bowtie open p95: < 1.5s for ≤ 200 elements.
+- Save patch p95: < 800ms.
+- Use Vercel Edge runtime where the route is read-only and tenant-scoped read; Node runtime for everything that touches Prisma or BullMQ.
 
 ---
 
-## Out of scope for Sprint 1 (deliberate)
+## 5. Workflow
 
-These are deferred to keep the sprint focused on foundation:
+For any task:
 
-- ❌ Bowtie / barrier endpoints — Sprint 2.
-- ❌ 12-step Wizard UI — Sprint 3.
-- ❌ Bowtie canvas — Sprint 4.
-- ❌ Barrier health calculator — Sprint 3.
-- ❌ AI agent — Sprint 5.
-- ❌ Worker job scheduling — Sprint 4.
-- ❌ Real-time co-editing — Sprint 6.
-- ❌ Production deployment — only Vercel preview deploys this sprint.
+1. Read this file.
+2. Read the prompt being given to you (in `docs/prompts/`).
+3. Read the spec sections the prompt references.
+4. Restate to yourself: what entity, which file, what AC, what tests.
+5. Plan: list the files you'll create or change. Show the plan.
+6. Implement: smallest meaningful unit at a time.
+7. Test: write tests at the same level you wrote code; run them.
+8. Verify: run the full test suite; run linter; run typecheck.
+9. Commit: one logical change per commit. Conventional commits: `feat(scope): ...`, `fix(scope): ...`, `chore(scope): ...`, `docs(scope): ...`, `test(scope): ...`.
+10. Document: if you made a structural decision, write or update an ADR in `docs/decisions/`.
 
----
-
-## Risks and mitigations
-
-| Risk | Mitigation |
-|---|---|
-| RLS policy bug allows cross-tenant reads | Required negative tests in S1-03; ADR records the policy text |
-| OIDC integration drags into MVP | Scaffold only in Sprint 1; full integration in Sprint 7 |
-| Prisma schema requires rework after S1-05 | Lock the schema with [`02_DATA_MODEL.md`](02_DATA_MODEL.md); any deviation requires an ADR |
-| Audit log performance | Partitioned monthly from day one (per spec); review at 100k rows |
+If you're stuck, **stop and ask**. Don't invent methodology, don't invent acceptance criteria, don't pick a different stack. The spec wins.
 
 ---
 
-## Definition of Sprint Done
+## 6. Commands you'll use
 
-- [ ] All stories above merged.
-- [ ] CI green on `main`.
-- [ ] Vercel preview deploys cleanly.
-- [ ] All tests pass; coverage budget met.
-- [ ] No open critical/high security findings (`pnpm audit`, Snyk).
-- [ ] ADRs recorded for: NestJS deviation, Liveblocks choice, Auth.js choice, RLS policy.
-- [ ] Sprint 2 prompts ([`prompts/05-bowtie-api.md`](prompts/05-bowtie-api.md), etc.) reviewed and ready.
+```bash
+# Install
+pnpm install
+
+# Database
+pnpm db:migrate         # run pending migrations
+pnpm db:seed            # seed reference data
+pnpm db:studio          # open Prisma Studio
+
+# Dev
+pnpm dev                # all apps (web, worker, realtime)
+pnpm dev --filter web   # just the web app
+pnpm dev --filter worker
+
+# Test
+pnpm test               # unit + integration
+pnpm test:watch
+pnpm test:e2e           # Playwright
+pnpm test:cov
+
+# Quality
+pnpm lint
+pnpm typecheck
+pnpm format
+
+# Build
+pnpm build
+
+# Run a specific package's commands
+pnpm --filter @bowtie/methodology test
+```
+
+---
+
+## 7. Common pitfalls — don't do these
+
+- ❌ Calling Prisma directly from a route handler. → ✅ Use `lib/repos/`.
+- ❌ Putting business rules in a route handler. → ✅ Push to `lib/services/` or `packages/methodology`.
+- ❌ Skipping the audit wrapper "just for this one mutation." → ✅ Always wrap.
+- ❌ Reading or writing across tenants in code. → ✅ Always scope by `tenantId`. Trust the wrappers.
+- ❌ Returning 403 on cross-tenant access. → ✅ Return 404 + emit security event.
+- ❌ Adding a column without RLS update. → ✅ Same migration adds the column and updates the RLS policy if needed.
+- ❌ Auto-accepting AI suggestions. → ✅ Always require human review.
+- ❌ Promoting a Red barrier to Green when compensatory measures exist. → ✅ Stays Red, sets `with_compensatory=true`.
+- ❌ Using "Escalation Factor" anywhere in code, comments, UI strings, or docs. → ✅ Always "Degradation Factor / Degradation Control".
+
+---
+
+## 8. When you finish a task
+
+Produce a short summary in this shape:
+
+```
+SUMMARY
+- What I built: <one line>
+- Files added: <list>
+- Files changed: <list>
+- Tests: <number unit / integration / e2e; coverage delta>
+- Migrations: <list, or "none">
+- Decisions: <ADR(s) added, or "none">
+- Open questions: <list, or "none">
+- Next prompt to run: <prompt id>
+```
+
+Don't celebrate. Don't pad. Don't say "I have successfully completed..." — just the summary.
+
+---
+
+## 9. Escalation
+
+If any of the following happens, **stop and ask the human**:
+
+- The spec is ambiguous on a methodology point.
+- Two parts of the spec contradict each other.
+- A test you can't make pass without weakening a guardrail.
+- A migration that would lose data.
+- A request to add a framework, vendor, or service not in the stack list.
+- A request to change the approval lifecycle, the risk model, or the AI advisory model.

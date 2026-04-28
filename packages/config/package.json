@@ -1,0 +1,13 @@
+{
+  "name": "@bowtie/config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "echo 'config has no build step'",
+    "lint": "echo 'config has no lint step'",
+    "typecheck": "echo 'config has no typecheck step'",
+    "test": "echo 'config has no tests'",
+    "clean": "echo 'nothing to clean'"
+  }
+}

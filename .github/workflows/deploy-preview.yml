@@ -1,0 +1,22 @@
+name: Deploy preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+# Vercel's GitHub integration creates the preview deployment automatically and
+# posts the URL on the PR. This workflow is a placeholder for any extra
+# preview-time checks (smoke probes, Lighthouse, comment formatting) we want to
+# layer on top. Wire up VERCEL_TOKEN / VERCEL_PROJECT_ID as repo secrets before
+# enabling the steps below.
+jobs:
+  preview-ready:
+    name: Preview deployed
+    runs-on: ubuntu-latest
+    steps:
+      - name: Acknowledge preview
+        run: echo "Vercel will post the preview URL on the PR."

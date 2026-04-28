@@ -36,11 +36,12 @@ test-results/
 .eslintcache
 .prettiercache
 
-# IDE
+# IDE / agent local state
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
 .idea/
+.claude/
 *.swp
 *.swo
 
