@@ -4,6 +4,7 @@
     "jsx": "preserve",
     "allowJs": true,
     "noEmit": true,
+    "baseUrl": ".",
     "plugins": [{ "name": "next" }],
     "paths": {
       "@bowtie/shared": ["../../packages/shared/src"],

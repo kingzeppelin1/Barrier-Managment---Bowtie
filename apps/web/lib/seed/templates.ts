@@ -1,0 +1,48 @@
+import type { Template } from '@bowtie/shared';
+
+export const SEED_TEMPLATES: Template[] = [
+  {
+    id: 'tpl-001',
+    name: 'Generic Hydrocarbon Release',
+    industry: 'Oil & Gas',
+    description: 'Starter bowtie for upstream / downstream loss-of-containment scenarios.',
+    hazard: 'Hydrocarbon under pressure',
+    topEvent: 'Loss of containment of hydrocarbon',
+    threatCount: 5,
+    consequenceCount: 4,
+    barrierCount: 12,
+  },
+  {
+    id: 'tpl-002',
+    name: 'Toxic Gas Release — Chlorine',
+    industry: 'Chemicals',
+    description: 'Toxic gas containment scenario for bulk-storage handling.',
+    hazard: 'Toxic gas under pressure',
+    topEvent: 'Loss of containment of toxic gas',
+    threatCount: 4,
+    consequenceCount: 3,
+    barrierCount: 10,
+  },
+  {
+    id: 'tpl-003',
+    name: 'Healthcare-Associated Infection',
+    industry: 'Healthcare',
+    description: 'Infection-control bowtie for invasive procedures.',
+    hazard: 'Patient exposure to pathogens',
+    topEvent: 'Infection of body site',
+    threatCount: 4,
+    consequenceCount: 4,
+    barrierCount: 8,
+  },
+  {
+    id: 'tpl-004',
+    name: 'Working at Height — Fall',
+    industry: 'Construction',
+    description: 'Generic fall-from-height bowtie.',
+    hazard: 'Worker at height',
+    topEvent: 'Uncontrolled fall from height',
+    threatCount: 5,
+    consequenceCount: 3,
+    barrierCount: 9,
+  },
+];

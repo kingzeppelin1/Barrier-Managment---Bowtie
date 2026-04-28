@@ -1,0 +1,25 @@
+'use client';
+
+import { Search } from 'lucide-react';
+
+import { Input } from '@/components/ui/input';
+import { RoleSwitcher } from './role-switcher';
+import { DemoTourButton } from './demo-tour-button';
+
+export function Topbar() {
+  return (
+    <header className="flex h-14 shrink-0 items-center gap-3 border-b bg-background px-4">
+      <div className="relative max-w-md flex-1">
+        <Search className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search bowties, barriers, actions… (demo)"
+          className="pl-8"
+          aria-label="Search"
+        />
+      </div>
+      <div className="flex-1" />
+      <DemoTourButton />
+      <RoleSwitcher />
+    </header>
+  );
+}
