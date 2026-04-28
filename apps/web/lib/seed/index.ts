@@ -54,7 +54,7 @@ import {
   HOSPITAL_AI_SUGGESTIONS,
 } from './scenarios/hospital';
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 export function buildSeedState(): DemoState {
   return {
@@ -89,5 +89,6 @@ export function buildSeedState(): DemoState {
     audits: [...OFFSHORE_AUDITS, ...CHEMICAL_AUDITS, ...HOSPITAL_AUDITS],
     templates: SEED_TEMPLATES,
     aiSuggestions: [...OFFSHORE_AI_SUGGESTIONS, ...CHEMICAL_AI_SUGGESTIONS, ...HOSPITAL_AI_SUGGESTIONS],
+    wizardDraft: null,
   };
 }

@@ -336,6 +336,83 @@ export const ScenarioSchema = z.object({
 });
 export type Scenario = z.infer<typeof ScenarioSchema>;
 
+// -- Wizard draft (Builder Wizard) ----------------------------------------
+// Persisted alongside DemoState so unfinished bowties survive reloads.
+
+export const WizardSeveritySchema = z.enum(['catastrophic', 'major', 'moderate', 'minor', 'negligible']);
+
+export const WizardThreatDraftSchema = z.object({
+  draftId: z.string(),
+  description: z.string(),
+  preventiveBarrierDraftIds: z.array(z.string()),
+});
+export type WizardThreatDraft = z.infer<typeof WizardThreatDraftSchema>;
+
+export const WizardConsequenceDraftSchema = z.object({
+  draftId: z.string(),
+  description: z.string(),
+  severity: WizardSeveritySchema,
+  mitigativeBarrierDraftIds: z.array(z.string()),
+});
+export type WizardConsequenceDraft = z.infer<typeof WizardConsequenceDraftSchema>;
+
+export const WizardBarrierDraftSchema = z.object({
+  draftId: z.string(),
+  name: z.string(),
+  type: BarrierTypeSchema,
+  function: BarrierFunctionSchema,
+  criticality: CriticalitySchema,
+  ownerId: z.string().nullable(),
+  performanceStandardId: z.string().nullable(),
+});
+export type WizardBarrierDraft = z.infer<typeof WizardBarrierDraftSchema>;
+
+export const WizardDegradationFactorDraftSchema = z.object({
+  draftId: z.string(),
+  barrierDraftId: z.string(),
+  description: z.string(),
+});
+export type WizardDegradationFactorDraft = z.infer<typeof WizardDegradationFactorDraftSchema>;
+
+export const WizardDegradationControlDraftSchema = z.object({
+  draftId: z.string(),
+  factorDraftId: z.string(),
+  name: z.string(),
+});
+export type WizardDegradationControlDraft = z.infer<typeof WizardDegradationControlDraftSchema>;
+
+export const WizardActionDraftSchema = z.object({
+  draftId: z.string(),
+  title: z.string(),
+  ownerId: z.string().nullable(),
+  dueDate: z.string(),
+  priority: z.enum(['critical', 'high', 'medium', 'low']),
+});
+export type WizardActionDraft = z.infer<typeof WizardActionDraftSchema>;
+
+export const WizardDraftSchema = z.object({
+  step: z.number().int().min(1).max(12),
+  scenarioId: z.string(),
+  ownerId: z.string(),
+  title: z.string(),
+  hazard: z.string(),
+  topEvent: z.string(),
+  assetOrProcess: z.string(),
+  threats: z.array(WizardThreatDraftSchema),
+  consequences: z.array(WizardConsequenceDraftSchema),
+  preventiveBarriers: z.array(WizardBarrierDraftSchema),
+  mitigativeBarriers: z.array(WizardBarrierDraftSchema),
+  degradationFactors: z.array(WizardDegradationFactorDraftSchema),
+  degradationControls: z.array(WizardDegradationControlDraftSchema),
+  riskBeforeBarriers: z.number(),
+  riskCurrent: z.number(),
+  riskAfterBarriers: z.number(),
+  riskTarget: z.number(),
+  actions: z.array(WizardActionDraftSchema),
+  startedAt: z.string(),
+});
+export type WizardDraft = z.infer<typeof WizardDraftSchema>;
+
 // -- Demo state container -------------------------------------------------
 
 export const DemoStateSchema = z.object({
@@ -358,5 +435,6 @@ export const DemoStateSchema = z.object({
   audits: z.array(AuditSchema),
   templates: z.array(TemplateSchema),
   aiSuggestions: z.array(AiSuggestionSchema),
+  wizardDraft: WizardDraftSchema.nullable(),
 });
 export type DemoState = z.infer<typeof DemoStateSchema>;
