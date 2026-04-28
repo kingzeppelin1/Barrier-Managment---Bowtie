@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { RotateCcw, Settings as SettingsIcon } from 'lucide-react';
+import { RotateCcw, Settings as SettingsIcon, Sparkles } from 'lucide-react';
 
 import { PageHeader } from '@/components/common/page-header';
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card';
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useDemoStore } from '@/lib/store';
 import { ROLE_LABEL, ROLE_DESCRIPTION } from '@/lib/rbac';
+import { getAIProviderName } from '@/lib/ai';
 import type { Role } from '@bowtie/shared';
 
 const ROLES: Role[] = ['risk_manager', 'barrier_owner', 'approver', 'auditor'];
@@ -78,6 +79,38 @@ export default function SettingsPage() {
                 </li>
               ))}
             </ul>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="space-y-3 p-4">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-status-blue" />
+              <CardTitle>AI Coach provider</CardTitle>
+            </div>
+            <CardDescription>
+              The Coach is advisory only — every accepted suggestion is logged with a named human
+              reviewer. The provider is selected by the{' '}
+              <code className="rounded bg-muted px-1 text-xs">AI_PROVIDER</code> env variable.
+            </CardDescription>
+            <div className="flex items-center justify-between gap-3 rounded-md border p-3">
+              <div>
+                <div className="text-sm font-medium">
+                  Active provider:{' '}
+                  <Badge variant="outline" className="ml-1 capitalize">
+                    {getAIProviderName()}
+                  </Badge>
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Production AI requires an{' '}
+                  <code className="rounded bg-muted px-1 text-[10px]">ANTHROPIC_API_KEY</code> env
+                  variable. Switch is disabled until the key is configured.
+                </p>
+              </div>
+              <Button size="sm" variant="outline" disabled>
+                Switch to Anthropic Claude
+              </Button>
+            </div>
           </CardContent>
         </Card>
 

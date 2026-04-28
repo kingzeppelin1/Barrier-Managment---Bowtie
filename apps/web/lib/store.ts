@@ -3,6 +3,7 @@
 import { create } from 'zustand';
 import type {
   Action,
+  AiSuggestion,
   Barrier,
   Bowtie,
   Consequence,
@@ -33,6 +34,18 @@ interface DemoStore extends DemoState {
   patchWizardDraft: (patch: Partial<WizardDraft>) => void;
   /** Materialise the current wizard draft into real entities; returns the new bowtie id. */
   submitWizardDraft: () => string | null;
+  /**
+   * AI Coach: merge fresh suggestions for a bowtie. Existing reviewed
+   * suggestions are preserved; pending suggestions with the same id are
+   * replaced (so re-runs refresh in place).
+   */
+  mergeAiSuggestions: (bowtieId: string, fresh: AiSuggestion[]) => void;
+  /** Accept an AI suggestion: stamps reviewerDecision + writes aiOriginSuggestionId on the affected entity. */
+  acceptAiSuggestion: (suggestionId: string) => void;
+  /** Reject an AI suggestion with optional reason text. */
+  rejectAiSuggestion: (suggestionId: string, reason?: string) => void;
+  /** Defer = keep reviewerDecision null but bring the timestamp forward. */
+  deferAiSuggestion: (suggestionId: string) => void;
   /** Bulk patch — keeps writes inside the persistence boundary. */
   patchState: (patch: Partial<DemoState>) => void;
 }
@@ -166,6 +179,102 @@ export const useDemoStore = create<DemoStore>((set, get) => ({
     set(next);
     persistFromState(next);
     return result.newBowtieId;
+  },
+
+  mergeAiSuggestions: (bowtieId, fresh) => {
+    const existing = get().aiSuggestions;
+    const freshById = new Map(fresh.map((s) => [s.id, s]));
+
+    // Replace pending suggestions whose id matches a fresh one;
+    // preserve every reviewed suggestion verbatim.
+    const merged: AiSuggestion[] = existing.map((s) => {
+      if (s.reviewerDecision !== null) return s;
+      const refreshed = freshById.get(s.id);
+      if (refreshed) {
+        freshById.delete(s.id);
+        return refreshed;
+      }
+      // Pending suggestion whose rule no longer fires for this bowtie -> drop it.
+      if (s.bowtieId === bowtieId) return null as unknown as AiSuggestion;
+      return s;
+    }).filter(Boolean);
+
+    // Append any fresh suggestions that weren't already in the store.
+    for (const s of freshById.values()) merged.push(s);
+
+    set({ aiSuggestions: merged });
+    persistFromState({ ...get(), aiSuggestions: merged });
+  },
+
+  acceptAiSuggestion: (suggestionId) => {
+    const reviewerId = get().currentUserId;
+    const reviewedAt = new Date().toISOString();
+    const target = get().aiSuggestions.find((s) => s.id === suggestionId);
+    if (!target) return;
+
+    const aiSuggestions = get().aiSuggestions.map((s) =>
+      s.id === suggestionId
+        ? { ...s, reviewerDecision: 'accepted' as const, reviewerId, reviewedAt, rejectionReason: null }
+        : s,
+    );
+
+    // Stamp aiOriginSuggestionId on the affected entity (best-effort by context type).
+    let barriers = get().barriers;
+    let degradationFactors = get().degradationFactors;
+    const degradationControls = get().degradationControls;
+    const tid = target.context.targetId;
+    if (tid) {
+      switch (target.context.type) {
+        case 'barrier':
+        case 'degradation_factor':
+        case 'performance_standard':
+          barriers = barriers.map((b) =>
+            b.id === tid ? { ...b, aiOriginSuggestionId: suggestionId } : b,
+          );
+          if (target.context.type === 'degradation_factor') {
+            degradationFactors = degradationFactors.map((f) =>
+              f.barrierId === tid && !f.aiOriginSuggestionId
+                ? { ...f, aiOriginSuggestionId: suggestionId }
+                : f,
+            );
+          }
+          break;
+        default:
+          break;
+      }
+    }
+
+    const next = { ...get(), aiSuggestions, barriers, degradationFactors, degradationControls };
+    set({ aiSuggestions, barriers, degradationFactors, degradationControls });
+    persistFromState(next);
+  },
+
+  rejectAiSuggestion: (suggestionId, reason) => {
+    const reviewerId = get().currentUserId;
+    const reviewedAt = new Date().toISOString();
+    const aiSuggestions = get().aiSuggestions.map((s) =>
+      s.id === suggestionId
+        ? {
+            ...s,
+            reviewerDecision: 'rejected' as const,
+            reviewerId,
+            reviewedAt,
+            rejectionReason: reason ?? null,
+          }
+        : s,
+    );
+    set({ aiSuggestions });
+    persistFromState({ ...get(), aiSuggestions });
+  },
+
+  deferAiSuggestion: (suggestionId) => {
+    // Defer leaves reviewerDecision null so the approval gate keeps blocking.
+    // We refresh createdAt so the demo viewer sees the change "stick".
+    const aiSuggestions = get().aiSuggestions.map((s) =>
+      s.id === suggestionId ? { ...s, createdAt: new Date().toISOString() } : s,
+    );
+    set({ aiSuggestions });
+    persistFromState({ ...get(), aiSuggestions });
   },
 }));
 

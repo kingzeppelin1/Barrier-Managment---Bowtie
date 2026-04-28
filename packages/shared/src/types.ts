@@ -291,10 +291,31 @@ export type Template = z.infer<typeof TemplateSchema>;
 // -- AI suggestions -------------------------------------------------------
 // Canonical 6-field schema (07_AI_AGENT.md §4) adapted for the demo.
 
+/**
+ * Coach-rule category — the kind of methodology check that produced this
+ * suggestion. Optional for backward compatibility with seed data that
+ * predates the AI Coach (Slice 10).
+ */
+export const AiSuggestionCategorySchema = z.enum([
+  'missing_barrier',
+  'top_event_quality',
+  'barrier_independence',
+  'risk_acceptance_warning',
+  'suggest_df',
+  'suggest_ps',
+  'stale_verification',
+  'insufficient_diversity',
+]);
+export type AiSuggestionCategory = z.infer<typeof AiSuggestionCategorySchema>;
+
 export const AiSuggestionSchema = z.object({
   id: z.string(),
   promptHash: z.string(),
   modelId: z.string(),
+  /** Bowtie this suggestion is scoped to (when applicable). */
+  bowtieId: z.string().nullable().optional(),
+  /** Coach-rule category (optional for legacy seed entries). */
+  category: AiSuggestionCategorySchema.optional(),
   context: z.object({
     type: z.enum(['barrier', 'top_event', 'threat', 'consequence', 'risk_acceptance', 'degradation_factor', 'performance_standard']),
     targetId: z.string().nullable(),
@@ -311,6 +332,7 @@ export const AiSuggestionSchema = z.object({
   reviewerDecision: z.enum(['accepted', 'rejected']).nullable(),
   reviewerId: z.string().nullable(),
   reviewedAt: z.string().nullable(),
+  rejectionReason: z.string().nullable().optional(),
   createdAt: z.string(),
 });
 export type AiSuggestion = z.infer<typeof AiSuggestionSchema>;

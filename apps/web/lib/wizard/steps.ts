@@ -1,8 +1,4 @@
-import { z } from 'zod';
-import {
-  WizardSeveritySchema,
-  type WizardDraft,
-} from '@bowtie/shared';
+import { WizardSeveritySchema, type WizardDraft } from '@bowtie/shared';
 
 /**
  * Step configuration for the 12-step Bowtie Builder Wizard.

@@ -3,6 +3,7 @@
 import { Search } from 'lucide-react';
 
 import { Input } from '@/components/ui/input';
+import { CoachTrigger } from '@/components/ai-coach/coach-trigger';
 import { RoleSwitcher } from './role-switcher';
 import { DemoTourButton } from './demo-tour-button';
 
@@ -18,6 +19,7 @@ export function Topbar() {
         />
       </div>
       <div className="flex-1" />
+      <CoachTrigger />
       <DemoTourButton />
       <RoleSwitcher />
     </header>

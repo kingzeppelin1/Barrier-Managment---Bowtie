@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useMemo, useState } from 'react';
+import { use, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Workflow } from 'lucide-react';
 
@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BowtieCanvas, type SelectedNode } from '@/components/bowtie/canvas/canvas';
 import { DetailPanel } from '@/components/bowtie/detail-panel';
+import { CoachPanel } from '@/components/ai-coach/coach-panel';
 import { useDemoStore } from '@/lib/store';
 
 export default function BowtieWorkspacePage({ params }: { params: Promise<{ id: string }> }) {
@@ -22,6 +23,20 @@ export default function BowtieWorkspacePage({ params }: { params: Promise<{ id: 
   const allDcs = useDemoStore((s) => s.degradationControls);
 
   const [selected, setSelected] = useState<SelectedNode | null>(null);
+  const [coachOpen, setCoachOpen] = useState(false);
+  const [coachFilterTargetId, setCoachFilterTargetId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handler = () => setCoachOpen((v) => !v);
+    window.addEventListener('bowtie-coach-toggle', handler);
+    return () => window.removeEventListener('bowtie-coach-toggle', handler);
+  }, []);
+
+  // When a node is selected with the coach already open, scope to that node.
+  useEffect(() => {
+    if (!coachOpen) return;
+    setCoachFilterTargetId(selected ? selected.id : null);
+  }, [selected, coachOpen]);
 
   const barriers = useMemo(
     () => allBarriers.filter((b) => b.bowtieIds.includes(id)),
@@ -100,6 +115,13 @@ export default function BowtieWorkspacePage({ params }: { params: Promise<{ id: 
         )}
       </div>
       <DetailPanel selected={selected} bowtie={bowtie} onClose={() => setSelected(null)} />
+      <CoachPanel
+        bowtie={bowtie}
+        open={coachOpen}
+        onOpenChange={setCoachOpen}
+        filterTargetId={coachFilterTargetId}
+        onClearFilter={() => setCoachFilterTargetId(null)}
+      />
     </>
   );
 }
