@@ -6,6 +6,7 @@ import { ClipboardCheck, SearchX } from 'lucide-react';
 
 import { PageHeader } from '@/components/common/page-header';
 import { EmptyState } from '@/components/common/empty-state';
+import { RegisterPageSkeleton } from '@/components/common/register-skeleton';
 import { RegisterToolbar } from '@/components/common/register-toolbar';
 import {
   Table,
@@ -18,11 +19,12 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useDemoStore } from '@/lib/store';
+import { useUrlFilterSync } from '@/lib/url-filters';
 import { formatDate } from '@/lib/utils';
 
 export default function VerificationsPage() {
   return (
-    <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading…</div>}>
+    <Suspense fallback={<RegisterPageSkeleton />}>
       <VerificationsInner />
     </Suspense>
   );
@@ -30,6 +32,7 @@ export default function VerificationsPage() {
 
 function VerificationsInner() {
   const searchParams = useSearchParams();
+  const syncUrl = useUrlFilterSync();
   const verifications = useDemoStore((s) => s.verifications);
   const barriers = useDemoStore((s) => s.barriers);
   const users = useDemoStore((s) => s.users);
@@ -37,10 +40,27 @@ function VerificationsInner() {
 
   const overdueOnly = searchParams?.get('overdue') === '1';
 
-  const [q, setQ] = useState('');
-  const [scenarioId, setScenarioId] = useState(searchParams?.get('scenarioId') ?? 'all');
-  const [method, setMethod] = useState(searchParams?.get('method') ?? 'all');
-  const [result, setResult] = useState(searchParams?.get('result') ?? 'all');
+  const [q, setQRaw] = useState('');
+  const [scenarioId, setScenarioIdRaw] = useState(searchParams?.get('scenarioId') ?? 'all');
+  const [method, setMethodRaw] = useState(searchParams?.get('method') ?? 'all');
+  const [result, setResultRaw] = useState(searchParams?.get('result') ?? 'all');
+
+  const setQ = (v: string) => {
+    setQRaw(v);
+    syncUrl({ q: v });
+  };
+  const setScenarioId = (v: string) => {
+    setScenarioIdRaw(v);
+    syncUrl({ scenarioId: v });
+  };
+  const setMethod = (v: string) => {
+    setMethodRaw(v);
+    syncUrl({ method: v });
+  };
+  const setResult = (v: string) => {
+    setResultRaw(v);
+    syncUrl({ result: v });
+  };
 
   const now = new Date();
 

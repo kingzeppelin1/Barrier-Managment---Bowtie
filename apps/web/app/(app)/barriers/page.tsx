@@ -7,6 +7,7 @@ import { Shield, SearchX } from 'lucide-react';
 
 import { PageHeader } from '@/components/common/page-header';
 import { EmptyState } from '@/components/common/empty-state';
+import { RegisterPageSkeleton } from '@/components/common/register-skeleton';
 import { StatusBadge } from '@/components/common/status-badge';
 import {
   Table,
@@ -26,6 +27,7 @@ import {
 import type { BarrierType, Criticality, HealthStatus } from '@bowtie/shared';
 
 import { useDemoStore } from '@/lib/store';
+import { useUrlFilterSync } from '@/lib/url-filters';
 import { formatDate } from '@/lib/utils';
 
 const VALID_STATUS = new Set<HealthStatus>(['green', 'yellow', 'red', 'gray']);
@@ -34,7 +36,7 @@ const VALID_CRIT = new Set<Criticality>(['critical', 'high', 'medium', 'low']);
 
 export default function BarrierRegisterPage() {
   return (
-    <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading…</div>}>
+    <Suspense fallback={<RegisterPageSkeleton />}>
       <BarrierRegisterInner />
     </Suspense>
   );
@@ -42,14 +44,16 @@ export default function BarrierRegisterPage() {
 
 function BarrierRegisterInner() {
   const searchParams = useSearchParams();
+  const syncUrl = useUrlFilterSync();
   const barriers = useDemoStore((s) => s.barriers);
   const users = useDemoStore((s) => s.users);
   const actions = useDemoStore((s) => s.actions);
   const bowties = useDemoStore((s) => s.bowties);
 
   // Seed filter state from URL params (?status=, ?criticality=, ?type=, ?scenarioId=).
-  // One-way only — state changes don't sync back to URL for the demo.
-  const [filters, setFilters] = useState<RegisterFilterValue>(() => {
+  // Filter mutations push back to URL via useUrlFilterSync so deep links
+  // accumulate rather than overwrite.
+  const [filters, setFiltersState] = useState<RegisterFilterValue>(() => {
     const initial = { ...DEFAULT_REGISTER_FILTERS };
     const status = searchParams?.get('status');
     if (status && VALID_STATUS.has(status as HealthStatus)) initial.status = status as HealthStatus;
@@ -61,6 +65,16 @@ function BarrierRegisterInner() {
     if (scenarioId) initial.scenarioId = scenarioId;
     return initial;
   });
+
+  const setFilters = (next: RegisterFilterValue) => {
+    setFiltersState(next);
+    syncUrl({
+      status: next.status,
+      criticality: next.criticality,
+      type: next.type,
+      scenarioId: next.scenarioId,
+    });
+  };
 
   const filtered = useMemo(() => {
     const q = filters.q.trim().toLowerCase();

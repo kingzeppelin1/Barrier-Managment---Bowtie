@@ -37,8 +37,17 @@ export function KpiCard({ label, value, hint, tone = 'default', href, className 
 
   if (href) {
     return (
-      <Link href={href} className={cn('group block', className)}>
-        <Card className="h-full transition-colors group-hover:border-primary/50">{inner}</Card>
+      <Link
+        href={href}
+        className={cn(
+          'group block rounded-lg outline-none ring-offset-background transition-shadow',
+          'hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+          className,
+        )}
+      >
+        <Card className="h-full border-2 border-transparent transition-colors group-hover:border-primary group-focus-visible:border-primary">
+          {inner}
+        </Card>
       </Link>
     );
   }

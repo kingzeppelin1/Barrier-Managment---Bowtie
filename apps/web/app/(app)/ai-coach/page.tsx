@@ -162,10 +162,19 @@ function SuggestionRow({
         ? 'yellow'
         : 'blue';
 
+  // Deep link to the bowtie workspace, focusing the node the suggestion
+  // is about (canvas selects + centres on it via ?focus=).
+  const focusId = suggestion.context.targetId ?? undefined;
+  const href = bowtieId
+    ? focusId
+      ? `/bowties/${bowtieId}?focus=${encodeURIComponent(focusId)}`
+      : `/bowties/${bowtieId}`
+    : '#';
+
   return (
     <li>
       <Link
-        href={bowtieId ? `/bowties/${bowtieId}` : '#'}
+        href={href}
         aria-disabled={!bowtieId}
         className={cn(
           'group flex items-start gap-3 rounded-md border p-3 transition-colors',

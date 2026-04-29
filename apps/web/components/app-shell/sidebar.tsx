@@ -62,7 +62,7 @@ export function Sidebar() {
         {groups.map((group) => (
           <div key={group.key || 'ungrouped'} className="mb-3">
             {group.key && (
-              <div className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-white/50">
+              <div className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-white/60">
                 {tNavGroups(group.key)}
               </div>
             )}

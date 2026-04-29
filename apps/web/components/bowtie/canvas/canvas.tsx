@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import {
   Background,
   BackgroundVariant,
@@ -9,6 +9,7 @@ import {
   ReactFlow,
   type Node,
   type NodeMouseHandler,
+  type ReactFlowInstance,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -23,9 +24,14 @@ export interface SelectedNode {
 interface BowtieCanvasProps extends BowtieGraphInput {
   onSelect?: (selected: SelectedNode | null) => void;
   selectedId?: string | null;
+  /**
+   * When set, the canvas centres + zooms in on the matching node after
+   * mount. Used by deep links from the AI Coach Inbox (?focus=<id>).
+   */
+  focusNodeId?: string | null;
 }
 
-export function BowtieCanvas({ onSelect, selectedId, ...input }: BowtieCanvasProps) {
+export function BowtieCanvas({ onSelect, selectedId, focusNodeId, ...input }: BowtieCanvasProps) {
   const { nodes, edges } = useMemo(() => buildBowtieGraph(input), [input]);
 
   const selectedKey = selectedId
@@ -43,6 +49,24 @@ export function BowtieCanvas({ onSelect, selectedId, ...input }: BowtieCanvasPro
     if (id) onSelect?.({ kind, id });
   };
 
+  // Capture the React Flow imperative API so we can centre on a focus node
+  // after layout has run.
+  const flowRef = useRef<ReactFlowInstance | null>(null);
+
+  useEffect(() => {
+    if (!focusNodeId) return;
+    const target = nodes.find((n) => extractEntityId(n) === focusNodeId);
+    if (!target || !flowRef.current) return;
+    // Wait for layout / fitView to settle so our setCenter wins.
+    const timer = setTimeout(() => {
+      // Centre on the node's middle, with a reasonable zoom.
+      const cx = target.position.x + 90;
+      const cy = target.position.y + 50;
+      flowRef.current?.setCenter(cx, cy, { zoom: 1.1, duration: 600 });
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [focusNodeId, nodes]);
+
   return (
     <div data-tour="canvas" className="h-full w-full">
       <ReactFlow
@@ -51,6 +75,9 @@ export function BowtieCanvas({ onSelect, selectedId, ...input }: BowtieCanvasPro
         nodeTypes={NODE_TYPES}
         onNodeClick={handleNodeClick}
         onPaneClick={() => onSelect?.(null)}
+        onInit={(instance) => {
+          flowRef.current = instance;
+        }}
         fitView
         fitViewOptions={{ padding: 0.15 }}
         minZoom={0.3}

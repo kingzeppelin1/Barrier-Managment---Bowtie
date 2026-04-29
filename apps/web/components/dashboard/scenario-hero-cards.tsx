@@ -29,11 +29,16 @@ function classifyResidualRisk(value: number): RiskLevel {
   return 'Low';
 }
 
+// Pill colours per Slice 15 spec:
+//   Low      = teal  (Effective; uses status-green token which maps to STAR teal)
+//   Medium   = mint/sky soft (calmer than orange to keep the gradient moving up)
+//   High     = orange (Degraded; uses status-yellow token which maps to STAR orange)
+//   Critical = STAR-extension red
 const RISK_BADGE: Record<RiskLevel, string> = {
   Low: 'bg-status-green/15 text-status-green',
-  Medium: 'bg-status-yellow/15 text-status-yellow',
+  Medium: 'bg-star-sky-soft text-star-navy',
   High: 'bg-status-yellow/20 text-status-yellow',
-  Critical: 'bg-status-red/20 text-status-red',
+  Critical: 'bg-status-red/15 text-status-red',
 };
 
 /**

@@ -1,8 +1,17 @@
 'use client';
 
-import { use, useEffect, useMemo, useState } from 'react';
+import { Suspense, use, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Workflow } from 'lucide-react';
+
+import type {
+  Barrier,
+  Consequence,
+  DegradationControl,
+  DegradationFactor,
+  Threat,
+} from '@bowtie/shared';
 
 import { PageHeader } from '@/components/common/page-header';
 import { EmptyState } from '@/components/common/empty-state';
@@ -15,6 +24,17 @@ import { useDemoStore } from '@/lib/store';
 
 export default function BowtieWorkspacePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  return (
+    <Suspense fallback={null}>
+      <WorkspaceInner id={id} />
+    </Suspense>
+  );
+}
+
+function WorkspaceInner({ id }: { id: string }) {
+  const searchParams = useSearchParams();
+  const focusParam = searchParams?.get('focus') ?? null;
+
   const bowtie = useDemoStore((s) => s.bowties.find((b) => b.id === id));
   const threats = useDemoStore((s) => s.threats.filter((t) => t.bowtieId === id));
   const consequences = useDemoStore((s) => s.consequences.filter((c) => c.bowtieId === id));
@@ -25,6 +45,26 @@ export default function BowtieWorkspacePage({ params }: { params: Promise<{ id: 
   const [selected, setSelected] = useState<SelectedNode | null>(null);
   const [coachOpen, setCoachOpen] = useState(false);
   const [coachFilterTargetId, setCoachFilterTargetId] = useState<string | null>(null);
+
+  // Apply ?focus=<id> deep links once on mount: select the node so the
+  // detail panel auto-opens, and let the canvas centre on it.
+  const focusAppliedRef = useRef(false);
+  useEffect(() => {
+    if (focusAppliedRef.current) return;
+    if (!focusParam) return;
+    const kind = resolveKindFromId(focusParam, {
+      bowtieId: bowtie?.id ?? null,
+      barriers: allBarriers,
+      threats,
+      consequences,
+      dfs: allDfs,
+      dcs: allDcs,
+    });
+    if (kind) {
+      setSelected({ kind, id: focusParam });
+      focusAppliedRef.current = true;
+    }
+  }, [focusParam, bowtie?.id, allBarriers, threats, consequences, allDfs, allDcs]);
 
   useEffect(() => {
     const handler = () => setCoachOpen((v) => !v);
@@ -111,6 +151,7 @@ export default function BowtieWorkspacePage({ params }: { params: Promise<{ id: 
             degradationControls={degradationControls}
             onSelect={setSelected}
             selectedId={selected?.id ?? null}
+            focusNodeId={focusParam}
           />
         )}
       </div>
@@ -124,4 +165,23 @@ export default function BowtieWorkspacePage({ params }: { params: Promise<{ id: 
       />
     </>
   );
+}
+
+interface ResolverInput {
+  bowtieId: string | null;
+  barriers: Barrier[];
+  threats: Threat[];
+  consequences: Consequence[];
+  dfs: DegradationFactor[];
+  dcs: DegradationControl[];
+}
+
+function resolveKindFromId(id: string, ctx: ResolverInput): SelectedNode['kind'] | null {
+  if (id === 'top-event' || id === ctx.bowtieId) return 'topEvent';
+  if (ctx.barriers.some((b) => b.id === id)) return 'barrier';
+  if (ctx.threats.some((t) => t.id === id)) return 'threat';
+  if (ctx.consequences.some((c) => c.id === id)) return 'consequence';
+  if (ctx.dfs.some((f) => f.id === id)) return 'degradationFactor';
+  if (ctx.dcs.some((dc) => dc.id === id)) return 'degradationControl';
+  return null;
 }

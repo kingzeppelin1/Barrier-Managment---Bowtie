@@ -6,6 +6,7 @@ import { CheckSquare, SearchX } from 'lucide-react';
 
 import { PageHeader } from '@/components/common/page-header';
 import { EmptyState } from '@/components/common/empty-state';
+import { RegisterPageSkeleton } from '@/components/common/register-skeleton';
 import { RegisterToolbar } from '@/components/common/register-toolbar';
 import {
   Table,
@@ -18,6 +19,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useDemoStore } from '@/lib/store';
+import { useUrlFilterSync } from '@/lib/url-filters';
 import { formatDate, relativeDays } from '@/lib/utils';
 
 const VALID_STATUS = new Set([
@@ -31,7 +33,7 @@ const VALID_PRIORITY = new Set(['critical', 'high', 'medium', 'low']);
 
 export default function ActionsPage() {
   return (
-    <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading…</div>}>
+    <Suspense fallback={<RegisterPageSkeleton />}>
       <ActionsInner />
     </Suspense>
   );
@@ -39,20 +41,38 @@ export default function ActionsPage() {
 
 function ActionsInner() {
   const searchParams = useSearchParams();
+  const syncUrl = useUrlFilterSync();
   const actions = useDemoStore((s) => s.actions);
   const users = useDemoStore((s) => s.users);
   const scenarios = useDemoStore((s) => s.scenarios);
 
-  const [q, setQ] = useState('');
-  const [scenarioId, setScenarioId] = useState(searchParams?.get('scenarioId') ?? 'all');
-  const [status, setStatus] = useState(() => {
+  const [q, setQRaw] = useState('');
+  const [scenarioId, setScenarioIdRaw] = useState(searchParams?.get('scenarioId') ?? 'all');
+  const [status, setStatusRaw] = useState(() => {
     const s = searchParams?.get('status');
     return s && VALID_STATUS.has(s) ? s : 'all';
   });
-  const [priority, setPriority] = useState(() => {
+  const [priority, setPriorityRaw] = useState(() => {
     const p = searchParams?.get('priority');
     return p && VALID_PRIORITY.has(p) ? p : 'all';
   });
+
+  const setQ = (v: string) => {
+    setQRaw(v);
+    syncUrl({ q: v });
+  };
+  const setScenarioId = (v: string) => {
+    setScenarioIdRaw(v);
+    syncUrl({ scenarioId: v });
+  };
+  const setStatus = (v: string) => {
+    setStatusRaw(v);
+    syncUrl({ status: v });
+  };
+  const setPriority = (v: string) => {
+    setPriorityRaw(v);
+    syncUrl({ priority: v });
+  };
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();

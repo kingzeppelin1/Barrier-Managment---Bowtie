@@ -7,6 +7,7 @@ import { Library, Plus, SearchX } from 'lucide-react';
 
 import { PageHeader } from '@/components/common/page-header';
 import { EmptyState } from '@/components/common/empty-state';
+import { RegisterPageSkeleton } from '@/components/common/register-skeleton';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -25,6 +26,7 @@ import {
 import { BowtieRowActions } from '@/components/bowtie/bowtie-row-actions';
 import { selectCurrentRole, useDemoStore } from '@/lib/store';
 import { can } from '@/lib/rbac';
+import { useUrlFilterSync } from '@/lib/url-filters';
 import { cn, formatDate } from '@/lib/utils';
 import type { ApprovalState } from '@bowtie/shared';
 
@@ -36,7 +38,7 @@ const REVIEW_STATES = new Set<ApprovalState>([
 
 export default function BowtieLibraryPage() {
   return (
-    <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading…</div>}>
+    <Suspense fallback={<RegisterPageSkeleton />}>
       <BowtieLibraryInner />
     </Suspense>
   );
@@ -44,6 +46,7 @@ export default function BowtieLibraryPage() {
 
 function BowtieLibraryInner() {
   const searchParams = useSearchParams();
+  const syncUrl = useUrlFilterSync();
   const bowties = useDemoStore((s) => s.bowties);
   const barriers = useDemoStore((s) => s.barriers);
   const users = useDemoStore((s) => s.users);
@@ -52,7 +55,7 @@ function BowtieLibraryInner() {
   // Special "in_review" magic value unions all three review-stage states.
   const reviewMagic = searchParams?.get('state') === 'in_review';
 
-  const [filters, setFilters] = useState<LibraryFilterValue>(() => {
+  const [filters, setFiltersState] = useState<LibraryFilterValue>(() => {
     const initial = { ...DEFAULT_LIBRARY_FILTERS };
     const scenarioId = searchParams?.get('scenarioId');
     if (scenarioId) initial.scenarioId = scenarioId;
@@ -60,6 +63,16 @@ function BowtieLibraryInner() {
     if (ownerId) initial.ownerId = ownerId;
     return initial;
   });
+
+  const setFilters = (next: LibraryFilterValue) => {
+    setFiltersState(next);
+    syncUrl({
+      scenarioId: next.scenarioId,
+      ownerId: next.ownerId,
+      approvalState: next.approvalState,
+      q: next.q,
+    });
+  };
 
   const canCreate = can(role, 'bowtie:create');
 
