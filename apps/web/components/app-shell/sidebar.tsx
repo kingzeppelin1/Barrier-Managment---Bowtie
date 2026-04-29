@@ -19,6 +19,12 @@ function isActive(pathname: string | null, href: string): boolean {
   return pathname === href || pathname.startsWith(href + '/');
 }
 
+/**
+ * STAR Suite sidebar — dark navy with mint/teal accents, matching the
+ * STAR Suite reference screens. Active items get a teal left accent +
+ * white text on a faint mint overlay; inactive items are mint at low
+ * contrast and lift to white on hover.
+ */
 export function Sidebar() {
   const pathname = usePathname();
   const tNavItems = useTranslations('nav.items');
@@ -26,7 +32,6 @@ export function Sidebar() {
   const tNav = useTranslations('nav');
   const tApp = useTranslations('app');
 
-  // Render items grouped by their `groupKey`, preserving order.
   const groups: { key: string; items: typeof NAV_ITEMS }[] = [];
   for (const item of NAV_ITEMS) {
     const last = groups.at(-1);
@@ -39,23 +44,25 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="flex h-screen w-60 shrink-0 flex-col border-r bg-card">
-      <div className="flex h-14 items-center gap-2 border-b px-4">
-        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-star-navy text-white">
+    <aside className="flex h-screen w-60 shrink-0 flex-col border-r border-star-navy bg-star-navy text-white">
+      {/* Header lockup: shield + STAR Suite + module label */}
+      <div className="flex h-14 items-center gap-2.5 border-b border-white/10 px-4">
+        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-star-teal text-white shadow-sm">
           <Shield className="h-4 w-4" />
         </div>
         <div className="flex flex-col leading-tight">
-          <span className="text-sm font-semibold text-star-navy">{tApp('suite')}</span>
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-star-teal">
+          <span className="text-sm font-semibold tracking-tight text-white">{tApp('suite')}</span>
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-star-teal">
             {tApp('tagline')}
           </span>
         </div>
       </div>
+
       <nav className="flex-1 overflow-y-auto px-2 py-3">
         {groups.map((group) => (
           <div key={group.key || 'ungrouped'} className="mb-3">
             {group.key && (
-              <div className="px-2 pb-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+              <div className="px-2 pb-1 text-[10px] font-semibold uppercase tracking-wider text-white/50">
                 {tNavGroups(group.key)}
               </div>
             )}
@@ -68,13 +75,24 @@ export function Sidebar() {
                     <Link
                       href={item.href}
                       className={cn(
-                        'flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
+                        'group relative flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors',
                         active
-                          ? 'bg-primary/10 text-primary'
-                          : 'text-foreground/80 hover:bg-accent hover:text-foreground',
+                          ? 'bg-white/10 text-white'
+                          : 'text-white/70 hover:bg-white/5 hover:text-white',
                       )}
                     >
-                      <Icon className="h-4 w-4 shrink-0" />
+                      {active && (
+                        <span
+                          aria-hidden
+                          className="absolute -left-2 top-1.5 h-5 w-0.5 rounded-r bg-star-teal"
+                        />
+                      )}
+                      <Icon
+                        className={cn(
+                          'h-4 w-4 shrink-0 transition-colors',
+                          active ? 'text-star-teal' : 'text-white/60 group-hover:text-white/90',
+                        )}
+                      />
                       <span className="truncate">{tNavItems(item.labelKey)}</span>
                     </Link>
                   </li>
@@ -84,7 +102,8 @@ export function Sidebar() {
           </div>
         ))}
       </nav>
-      <div className="border-t p-3 text-[11px] text-muted-foreground">{tNav('footer')}</div>
+
+      <div className="border-t border-white/10 p-3 text-[11px] text-white/50">{tNav('footer')}</div>
     </aside>
   );
 }
