@@ -15,7 +15,24 @@ import type {
   Threat,
 } from '@bowtie/shared';
 
-// -- Status colour mapping (drives the left stripe / pip on each card) ----
+/**
+ * Bowtie canvas node palette — STAR Design System mapping (Slice 16).
+ *
+ *   Top Event           → STAR Navy (border + 5% fill)
+ *   Threats (left)      → STAR Teal mørk (4px left accent on white card)
+ *   Consequences (right)→ STAR Orange   (4px left accent on white card)
+ *   Barriers            → top stripe driven by status:
+ *                            green  → STAR Teal      (Effective)
+ *                            yellow → STAR Orange    (Degraded)
+ *                            red    → STAR-extension (Failed)
+ *                            gray   → neutral muted  (Unknown)
+ *   Degradation Factor  → STAR Navy @ 60% (border) + 5% fill — methodology
+ *                          says DF is a human / organisational factor
+ *   Degradation Control → STAR Sky surface + STAR Teal accents — the
+ *                          "information / control" colour, kept distinct
+ *                          from the Teal mørk used on threats
+ */
+
 const STATUS_BG: Record<HealthStatus, string> = {
   green: 'bg-status-green',
   yellow: 'bg-status-yellow',
@@ -60,19 +77,19 @@ function ThreatNodeImpl({ data, selected }: NP<ThreatNodeData>) {
   return (
     <div
       className={cn(
-        'group flex w-56 items-start gap-2 rounded-md border bg-card p-2.5 text-left shadow-sm transition-all',
-        'hover:border-foreground/30',
+        'group flex w-56 items-start gap-2 rounded-md border border-l-4 border-l-star-teal bg-card p-2.5 text-left shadow-sm transition-all',
+        'hover:border-foreground/30 hover:border-l-star-teal',
         selected && 'ring-2 ring-primary ring-offset-2 ring-offset-background',
       )}
     >
-      <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-status-yellow/15 text-status-yellow">
+      <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-star-teal/15 text-star-teal">
         <Zap className="h-3.5 w-3.5" />
       </div>
       <div className="min-w-0 flex-1">
         <div className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">Threat</div>
         <div className="mt-0.5 text-xs leading-snug text-foreground">{threat.description}</div>
       </div>
-      <Handle type="source" position={Position.Right} className="!h-2 !w-2 !border-0 !bg-muted-foreground" />
+      <Handle type="source" position={Position.Right} className="!h-2 !w-2 !border-0 !bg-star-teal" />
     </div>
   );
 }
@@ -84,16 +101,16 @@ function TopEventNodeImpl({ data, selected }: NP<TopEventNodeData>) {
   return (
     <div
       className={cn(
-        'flex w-64 flex-col items-center gap-1 rounded-md border-2 border-status-red/60 bg-status-red/5 p-3 text-center shadow-md',
+        'flex w-64 flex-col items-center gap-1 rounded-md border-2 border-star-navy/60 bg-star-navy/5 p-3 text-center shadow-md',
         selected && 'ring-2 ring-primary ring-offset-2 ring-offset-background',
       )}
     >
-      <Handle type="target" position={Position.Left} className="!h-2 !w-2 !border-0 !bg-status-red" />
-      <Handle type="source" position={Position.Right} className="!h-2 !w-2 !border-0 !bg-status-red" />
-      <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wide text-status-red">
+      <Handle type="target" position={Position.Left} className="!h-2 !w-2 !border-0 !bg-star-navy" />
+      <Handle type="source" position={Position.Right} className="!h-2 !w-2 !border-0 !bg-star-navy" />
+      <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wide text-star-navy">
         <Flame className="h-3 w-3" /> Top Event
       </div>
-      <div className="text-sm font-semibold leading-tight">{topEvent}</div>
+      <div className="text-sm font-semibold leading-tight text-star-navy">{topEvent}</div>
       <div className="text-[11px] text-muted-foreground">Hazard: {hazard}</div>
     </div>
   );
@@ -114,13 +131,13 @@ function ConsequenceNodeImpl({ data, selected }: NP<ConsequenceNodeData>) {
   return (
     <div
       className={cn(
-        'flex w-56 items-start gap-2 rounded-md border bg-card p-2.5 text-left shadow-sm transition-all',
-        'hover:border-foreground/30',
+        'flex w-56 items-start gap-2 rounded-md border border-l-4 border-l-star-orange bg-card p-2.5 text-left shadow-sm transition-all',
+        'hover:border-foreground/30 hover:border-l-star-orange',
         selected && 'ring-2 ring-primary ring-offset-2 ring-offset-background',
       )}
     >
-      <Handle type="target" position={Position.Left} className="!h-2 !w-2 !border-0 !bg-muted-foreground" />
-      <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-status-red/15 text-status-red">
+      <Handle type="target" position={Position.Left} className="!h-2 !w-2 !border-0 !bg-star-orange" />
+      <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-star-orange/20 text-star-navy">
         <AlertTriangle className="h-3.5 w-3.5" />
       </div>
       <div className="min-w-0 flex-1">
@@ -154,7 +171,7 @@ function BarrierNodeImpl({ data, selected }: NP<BarrierNodeData>) {
     >
       <Handle type="target" position={Position.Left} className="!h-2 !w-2 !border-0 !bg-muted-foreground" />
       <Handle type="source" position={Position.Right} className="!h-2 !w-2 !border-0 !bg-muted-foreground" />
-      <Handle type="source" position={Position.Bottom} id="df" className="!h-2 !w-2 !border-0 !bg-status-purple" />
+      <Handle type="source" position={Position.Bottom} id="df" className="!h-2 !w-2 !border-0 !bg-star-navy" />
       <div className={cn('h-1 w-full rounded-t-md', STATUS_BG[barrier.status])} />
       <div className="flex items-start gap-2 p-2">
         <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
@@ -186,23 +203,24 @@ function BarrierNodeImpl({ data, selected }: NP<BarrierNodeData>) {
 export const BarrierNode = memo(BarrierNodeImpl);
 
 // -- Degradation Factor --------------------------------------------------
+// Navy @ 60% per Slice 16 spec — the "human / organisational factor" tone.
 function DegradationFactorNodeImpl({ data, selected }: NP<DegradationFactorNodeData>) {
   const { factor } = data;
   return (
     <div
       className={cn(
-        'flex w-44 items-start gap-1.5 rounded-md border border-status-purple/40 bg-status-purple/5 p-2 text-left shadow-sm transition-all',
-        'hover:border-status-purple/70',
+        'flex w-44 items-start gap-1.5 rounded-md border border-star-navy/30 bg-star-navy/5 p-2 text-left shadow-sm transition-all',
+        'hover:border-star-navy/60',
         selected && 'ring-2 ring-primary ring-offset-2 ring-offset-background',
       )}
     >
-      <Handle type="target" position={Position.Top} className="!h-2 !w-2 !border-0 !bg-status-purple" />
-      <Handle type="source" position={Position.Bottom} className="!h-2 !w-2 !border-0 !bg-status-purple" />
-      <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-status-purple/15 text-status-purple">
+      <Handle type="target" position={Position.Top} className="!h-2 !w-2 !border-0 !bg-star-navy" />
+      <Handle type="source" position={Position.Bottom} className="!h-2 !w-2 !border-0 !bg-star-navy" />
+      <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-star-navy/15 text-star-navy">
         <UserCog className="h-3 w-3" />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="text-[10px] font-medium uppercase tracking-wide text-status-purple">Degradation Factor</div>
+        <div className="text-[10px] font-medium uppercase tracking-wide text-star-navy">Degradation Factor</div>
         <div className="mt-0.5 line-clamp-2 text-[11px] leading-snug">{factor.description}</div>
       </div>
     </div>
@@ -211,26 +229,29 @@ function DegradationFactorNodeImpl({ data, selected }: NP<DegradationFactorNodeD
 export const DegradationFactorNode = memo(DegradationFactorNodeImpl);
 
 // -- Degradation Control --------------------------------------------------
+// STAR Sky surface + STAR Teal accents — kept visually distinct from
+// threats (which now use Teal mørk on the left). This is the
+// "information / control" tone called out in the manual.
 function DegradationControlNodeImpl({ data, selected }: NP<DegradationControlNodeData>) {
   const { control } = data;
   return (
     <div
       className={cn(
-        'flex w-44 items-start gap-1.5 rounded-md border border-status-blue/40 bg-status-blue/5 p-2 text-left shadow-sm transition-all',
-        'hover:border-status-blue/70',
+        'flex w-44 items-start gap-1.5 rounded-md border border-star-sky bg-star-sky-soft p-2 text-left shadow-sm transition-all',
+        'hover:border-star-teal/40',
         selected && 'ring-2 ring-primary ring-offset-2 ring-offset-background',
       )}
     >
-      <Handle type="target" position={Position.Top} className="!h-2 !w-2 !border-0 !bg-status-blue" />
-      <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-status-blue/15 text-status-blue">
+      <Handle type="target" position={Position.Top} className="!h-2 !w-2 !border-0 !bg-star-teal" />
+      <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-star-sky text-star-teal">
         <Sparkles className="h-3 w-3" />
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-1">
-          <div className="text-[10px] font-medium uppercase tracking-wide text-status-blue">DC</div>
+          <div className="text-[10px] font-medium uppercase tracking-wide text-star-teal">DC</div>
           <span className={cn('h-1.5 w-1.5 rounded-full', STATUS_BG[control.status])} />
         </div>
-        <div className="mt-0.5 line-clamp-2 text-[11px] leading-snug">{control.name}</div>
+        <div className="mt-0.5 line-clamp-2 text-[11px] leading-snug text-star-navy">{control.name}</div>
       </div>
     </div>
   );

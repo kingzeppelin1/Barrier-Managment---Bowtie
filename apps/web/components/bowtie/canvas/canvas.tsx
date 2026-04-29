@@ -94,17 +94,18 @@ export function BowtieCanvas({ onSelect, selectedId, focusNodeId, ...input }: Bo
           zoomable
           className="!hidden md:!block"
           nodeColor={(n) => {
+            // STAR-mapped minimap dots — same palette as the main canvas.
             switch (n.type) {
               case 'topEvent':
-                return 'hsl(var(--status-red))';
+                return 'hsl(var(--star-navy))';
               case 'threat':
-                return 'hsl(var(--status-yellow))';
+                return 'hsl(var(--star-teal))';
               case 'consequence':
-                return 'hsl(var(--status-red))';
+                return 'hsl(var(--star-orange))';
               case 'degradationFactor':
-                return 'hsl(var(--status-purple))';
+                return 'hsl(var(--star-navy) / 0.6)';
               case 'degradationControl':
-                return 'hsl(var(--status-blue))';
+                return 'hsl(var(--star-sky))';
               case 'barrier':
               default:
                 return 'hsl(var(--muted-foreground))';

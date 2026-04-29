@@ -175,14 +175,14 @@ export function buildBowtieGraph(input: BowtieGraphInput): BowtieGraph {
         position: { x: dfX, y: dfY },
         data: { factor: f },
       });
-      // Edge: barrier (bottom 'df' handle) → DF
+      // Edge: barrier (bottom 'df' handle) → DF (navy, dashed)
       edges.push({
         id: `edge-b-${barrierId}-df-${f.id}`,
         source: `barrier-${barrierId}`,
         sourceHandle: 'df',
         target: `df-${f.id}`,
         type: 'smoothstep',
-        style: { stroke: 'hsl(var(--status-purple))', strokeWidth: 1.5, strokeDasharray: '4 3' },
+        style: { stroke: 'hsl(var(--star-navy))', strokeWidth: 1.5, strokeDasharray: '4 3' },
       });
 
       // DCs
@@ -201,7 +201,8 @@ export function buildBowtieGraph(input: BowtieGraphInput): BowtieGraph {
           source: `df-${f.id}`,
           target: `dc-${dc.id}`,
           type: 'smoothstep',
-          style: { stroke: 'hsl(var(--status-blue))', strokeWidth: 1.5 },
+          // DF → DC edge: STAR Teal (information / control link)
+          style: { stroke: 'hsl(var(--star-teal))', strokeWidth: 1.5 },
         });
       });
     });
