@@ -1,7 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Shield, SearchX } from 'lucide-react';
 
 import { PageHeader } from '@/components/common/page-header';
@@ -22,16 +23,44 @@ import {
   DEFAULT_REGISTER_FILTERS,
   type RegisterFilterValue,
 } from '@/components/barrier/register-filters';
+import type { BarrierType, Criticality, HealthStatus } from '@bowtie/shared';
 
 import { useDemoStore } from '@/lib/store';
 import { formatDate } from '@/lib/utils';
 
+const VALID_STATUS = new Set<HealthStatus>(['green', 'yellow', 'red', 'gray']);
+const VALID_TYPE = new Set<BarrierType>(['preventive', 'mitigative', 'recovery', 'control']);
+const VALID_CRIT = new Set<Criticality>(['critical', 'high', 'medium', 'low']);
+
 export default function BarrierRegisterPage() {
+  return (
+    <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading…</div>}>
+      <BarrierRegisterInner />
+    </Suspense>
+  );
+}
+
+function BarrierRegisterInner() {
+  const searchParams = useSearchParams();
   const barriers = useDemoStore((s) => s.barriers);
   const users = useDemoStore((s) => s.users);
   const actions = useDemoStore((s) => s.actions);
   const bowties = useDemoStore((s) => s.bowties);
-  const [filters, setFilters] = useState<RegisterFilterValue>(DEFAULT_REGISTER_FILTERS);
+
+  // Seed filter state from URL params (?status=, ?criticality=, ?type=, ?scenarioId=).
+  // One-way only — state changes don't sync back to URL for the demo.
+  const [filters, setFilters] = useState<RegisterFilterValue>(() => {
+    const initial = { ...DEFAULT_REGISTER_FILTERS };
+    const status = searchParams?.get('status');
+    if (status && VALID_STATUS.has(status as HealthStatus)) initial.status = status as HealthStatus;
+    const crit = searchParams?.get('criticality');
+    if (crit && VALID_CRIT.has(crit as Criticality)) initial.criticality = crit as Criticality;
+    const type = searchParams?.get('type');
+    if (type && VALID_TYPE.has(type as BarrierType)) initial.type = type as BarrierType;
+    const scenarioId = searchParams?.get('scenarioId');
+    if (scenarioId) initial.scenarioId = scenarioId;
+    return initial;
+  });
 
   const filtered = useMemo(() => {
     const q = filters.q.trim().toLowerCase();

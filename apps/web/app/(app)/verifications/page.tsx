@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { ClipboardCheck, SearchX } from 'lucide-react';
 
 import { PageHeader } from '@/components/common/page-header';
@@ -20,15 +21,28 @@ import { useDemoStore } from '@/lib/store';
 import { formatDate } from '@/lib/utils';
 
 export default function VerificationsPage() {
+  return (
+    <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading…</div>}>
+      <VerificationsInner />
+    </Suspense>
+  );
+}
+
+function VerificationsInner() {
+  const searchParams = useSearchParams();
   const verifications = useDemoStore((s) => s.verifications);
   const barriers = useDemoStore((s) => s.barriers);
   const users = useDemoStore((s) => s.users);
   const scenarios = useDemoStore((s) => s.scenarios);
 
+  const overdueOnly = searchParams?.get('overdue') === '1';
+
   const [q, setQ] = useState('');
-  const [scenarioId, setScenarioId] = useState('all');
-  const [method, setMethod] = useState('all');
-  const [result, setResult] = useState('all');
+  const [scenarioId, setScenarioId] = useState(searchParams?.get('scenarioId') ?? 'all');
+  const [method, setMethod] = useState(searchParams?.get('method') ?? 'all');
+  const [result, setResult] = useState(searchParams?.get('result') ?? 'all');
+
+  const now = new Date();
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
@@ -36,6 +50,7 @@ export default function VerificationsPage() {
       if (scenarioId !== 'all' && v.scenarioId !== scenarioId) return false;
       if (method !== 'all' && v.method !== method) return false;
       if (result !== 'all' && v.result !== result) return false;
+      if (overdueOnly && new Date(v.nextDue) >= now) return false;
       if (term) {
         const barrier = barriers.find((b) => b.id === v.barrierId);
         const hay = `${barrier?.name ?? ''} ${v.comments ?? ''} ${v.evidence ?? ''}`.toLowerCase();

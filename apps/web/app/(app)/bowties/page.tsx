@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Library, Plus, SearchX } from 'lucide-react';
 
 import { PageHeader } from '@/components/common/page-header';
@@ -25,13 +26,40 @@ import { BowtieRowActions } from '@/components/bowtie/bowtie-row-actions';
 import { selectCurrentRole, useDemoStore } from '@/lib/store';
 import { can } from '@/lib/rbac';
 import { cn, formatDate } from '@/lib/utils';
+import type { ApprovalState } from '@bowtie/shared';
+
+const REVIEW_STATES = new Set<ApprovalState>([
+  'internal_review',
+  'sme_review',
+  'risk_manager_review',
+]);
 
 export default function BowtieLibraryPage() {
+  return (
+    <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading…</div>}>
+      <BowtieLibraryInner />
+    </Suspense>
+  );
+}
+
+function BowtieLibraryInner() {
+  const searchParams = useSearchParams();
   const bowties = useDemoStore((s) => s.bowties);
   const barriers = useDemoStore((s) => s.barriers);
   const users = useDemoStore((s) => s.users);
   const role = useDemoStore(selectCurrentRole);
-  const [filters, setFilters] = useState<LibraryFilterValue>(DEFAULT_LIBRARY_FILTERS);
+
+  // Special "in_review" magic value unions all three review-stage states.
+  const reviewMagic = searchParams?.get('state') === 'in_review';
+
+  const [filters, setFilters] = useState<LibraryFilterValue>(() => {
+    const initial = { ...DEFAULT_LIBRARY_FILTERS };
+    const scenarioId = searchParams?.get('scenarioId');
+    if (scenarioId) initial.scenarioId = scenarioId;
+    const ownerId = searchParams?.get('ownerId');
+    if (ownerId) initial.ownerId = ownerId;
+    return initial;
+  });
 
   const canCreate = can(role, 'bowtie:create');
 
@@ -42,6 +70,7 @@ export default function BowtieLibraryPage() {
       if (filters.scenarioId !== 'all' && bt.scenarioId !== filters.scenarioId) return false;
       if (filters.approvalState !== 'all' && bt.approvalState !== filters.approvalState) return false;
       if (filters.ownerId !== 'all' && bt.ownerId !== filters.ownerId) return false;
+      if (reviewMagic && !REVIEW_STATES.has(bt.approvalState)) return false;
       if (q) {
         const hay = `${bt.title} ${bt.hazard} ${bt.topEvent} ${bt.assetOrProcess}`.toLowerCase();
         if (!hay.includes(q)) return false;

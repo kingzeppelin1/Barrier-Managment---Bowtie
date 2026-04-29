@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { Suspense, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { CheckSquare, SearchX } from 'lucide-react';
 
 import { PageHeader } from '@/components/common/page-header';
@@ -19,15 +20,39 @@ import { Button } from '@/components/ui/button';
 import { useDemoStore } from '@/lib/store';
 import { formatDate, relativeDays } from '@/lib/utils';
 
+const VALID_STATUS = new Set([
+  'open',
+  'in_progress',
+  'pending_review',
+  'overdue',
+  'closed',
+]);
+const VALID_PRIORITY = new Set(['critical', 'high', 'medium', 'low']);
+
 export default function ActionsPage() {
+  return (
+    <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">Loading…</div>}>
+      <ActionsInner />
+    </Suspense>
+  );
+}
+
+function ActionsInner() {
+  const searchParams = useSearchParams();
   const actions = useDemoStore((s) => s.actions);
   const users = useDemoStore((s) => s.users);
   const scenarios = useDemoStore((s) => s.scenarios);
 
   const [q, setQ] = useState('');
-  const [scenarioId, setScenarioId] = useState('all');
-  const [status, setStatus] = useState('all');
-  const [priority, setPriority] = useState('all');
+  const [scenarioId, setScenarioId] = useState(searchParams?.get('scenarioId') ?? 'all');
+  const [status, setStatus] = useState(() => {
+    const s = searchParams?.get('status');
+    return s && VALID_STATUS.has(s) ? s : 'all';
+  });
+  const [priority, setPriority] = useState(() => {
+    const p = searchParams?.get('priority');
+    return p && VALID_PRIORITY.has(p) ? p : 'all';
+  });
 
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
