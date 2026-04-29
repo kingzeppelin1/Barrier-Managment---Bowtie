@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { Shield } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -20,36 +21,42 @@ function isActive(pathname: string | null, href: string): boolean {
 
 export function Sidebar() {
   const pathname = usePathname();
+  const tNavItems = useTranslations('nav.items');
+  const tNavGroups = useTranslations('nav.groups');
+  const tNav = useTranslations('nav');
+  const tApp = useTranslations('app');
 
-  // Render items grouped by their `group` field, preserving order.
-  const groups: { name: string; items: typeof NAV_ITEMS }[] = [];
+  // Render items grouped by their `groupKey`, preserving order.
+  const groups: { key: string; items: typeof NAV_ITEMS }[] = [];
   for (const item of NAV_ITEMS) {
     const last = groups.at(-1);
-    const groupName = item.group ?? '';
-    if (last && last.name === groupName) {
+    const key = item.groupKey ?? '';
+    if (last && last.key === key) {
       last.items.push(item);
     } else {
-      groups.push({ name: groupName, items: [item] });
+      groups.push({ key, items: [item] });
     }
   }
 
   return (
     <aside className="flex h-screen w-60 shrink-0 flex-col border-r bg-card">
       <div className="flex h-14 items-center gap-2 border-b px-4">
-        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
+        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-star-navy text-white">
           <Shield className="h-4 w-4" />
         </div>
         <div className="flex flex-col leading-tight">
-          <span className="text-sm font-semibold">Bowtie</span>
-          <span className="text-[11px] text-muted-foreground">Barrier Management</span>
+          <span className="text-sm font-semibold text-star-navy">{tApp('suite')}</span>
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-star-teal">
+            {tApp('tagline')}
+          </span>
         </div>
       </div>
       <nav className="flex-1 overflow-y-auto px-2 py-3">
         {groups.map((group) => (
-          <div key={group.name} className="mb-3">
-            {group.name && (
+          <div key={group.key || 'ungrouped'} className="mb-3">
+            {group.key && (
               <div className="px-2 pb-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                {group.name}
+                {tNavGroups(group.key)}
               </div>
             )}
             <ul className="space-y-0.5">
@@ -68,7 +75,7 @@ export function Sidebar() {
                       )}
                     >
                       <Icon className="h-4 w-4 shrink-0" />
-                      <span className="truncate">{item.label}</span>
+                      <span className="truncate">{tNavItems(item.labelKey)}</span>
                     </Link>
                   </li>
                 );
@@ -77,9 +84,7 @@ export function Sidebar() {
           </div>
         ))}
       </nav>
-      <div className="border-t p-3 text-[11px] text-muted-foreground">
-        Demo build — no real backend
-      </div>
+      <div className="border-t p-3 text-[11px] text-muted-foreground">{tNav('footer')}</div>
     </aside>
   );
 }

@@ -1,5 +1,7 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
+
 import { PageHeader } from '@/components/common/page-header';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertBanner } from '@/components/dashboard/alert-banner';
@@ -10,6 +12,10 @@ import { TopActionsCard } from '@/components/dashboard/top-actions-card';
 import { useDemoStore } from '@/lib/store';
 
 export default function DashboardPage() {
+  const t = useTranslations('dashboard');
+  const tKpi = useTranslations('dashboard.kpi');
+  const tDist = useTranslations('dashboard.distribution');
+
   const bowties = useDemoStore((s) => s.bowties);
   const barriers = useDemoStore((s) => s.barriers);
   const actions = useDemoStore((s) => s.actions);
@@ -31,19 +37,24 @@ export default function DashboardPage() {
 
   return (
     <>
-      <PageHeader
-        title="Dashboard"
-        description="Live snapshot from the demo seed — three industry scenarios."
-      />
+      <PageHeader title={t('title')} description={t('description')} />
       <div className="space-y-6 p-6">
         <AlertBanner barriers={barriers} actions={actions} verifications={verifications} />
 
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-          <KpiCard label="Active bowties" value={bowties.length} hint={`${requiringReview} in review`} />
-          <KpiCard label="Critical barriers" value={criticalBarriers} />
-          <KpiCard label="Open actions" value={openActions} tone={openActions > 0 ? 'yellow' : 'default'} />
           <KpiCard
-            label="Overdue verifications"
+            label={tKpi('activeBowties')}
+            value={bowties.length}
+            hint={tKpi('inReviewHint', { count: requiringReview })}
+          />
+          <KpiCard label={tKpi('criticalBarriers')} value={criticalBarriers} />
+          <KpiCard
+            label={tKpi('openActions')}
+            value={openActions}
+            tone={openActions > 0 ? 'yellow' : 'default'}
+          />
+          <KpiCard
+            label={tKpi('overdueVerifications')}
             value={overdueVerifications}
             tone={overdueVerifications > 0 ? 'red' : 'green'}
           />
@@ -53,8 +64,10 @@ export default function DashboardPage() {
           <Card className="lg:col-span-1">
             <CardContent className="space-y-3 p-4">
               <div className="flex items-baseline justify-between">
-                <div className="text-sm font-semibold">Barrier health distribution</div>
-                <div className="text-xs text-muted-foreground">{barriers.length} total</div>
+                <div className="text-sm font-semibold">{tDist('title')}</div>
+                <div className="text-xs text-muted-foreground">
+                  {barriers.length} {tDist('totalSuffix')}
+                </div>
               </div>
               <StatusDonut barriers={barriers} />
               <StatusDonutLegend barriers={barriers} />
@@ -63,23 +76,23 @@ export default function DashboardPage() {
 
           <div className="lg:col-span-2 grid gap-3 md:grid-cols-2">
             <KpiCard
-              label="High residual risks"
+              label={tKpi('highResidualRisks')}
               value={highResidual}
-              hint="Residual ≥ 8"
+              hint={tKpi('residualThresholdHint')}
               tone={highResidual > 0 ? 'yellow' : 'default'}
             />
             <KpiCard
-              label="Bowties requiring review"
+              label={tKpi('bowtiesRequiringReview')}
               value={requiringReview}
-              hint="In any review stage"
+              hint={tKpi('anyReviewStageHint')}
             />
             <KpiCard
-              label="Red barriers"
+              label={tKpi('redBarriers')}
               value={barriers.filter((b) => b.status === 'red').length}
               tone="red"
             />
             <KpiCard
-              label="Yellow barriers"
+              label={tKpi('yellowBarriers')}
               value={barriers.filter((b) => b.status === 'yellow').length}
               tone="yellow"
             />

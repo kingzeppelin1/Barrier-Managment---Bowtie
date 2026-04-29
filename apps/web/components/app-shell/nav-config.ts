@@ -14,39 +14,47 @@ import {
   ScrollText,
   FileText,
   FileStack,
+  Sparkles,
   Settings as SettingsIcon,
   type LucideIcon,
 } from 'lucide-react';
 
+/**
+ * Navigation config — labels are i18n keys, resolved at render time via
+ * useTranslations('nav.items'). Group keys map into nav.groups.
+ */
 export interface NavItem {
-  label: string;
+  /** i18n key under `nav.items`. */
+  labelKey: string;
   href: string;
   icon: LucideIcon;
-  /** Optional grouping label rendered above the section. */
-  group?: string;
+  /** i18n key under `nav.groups`. */
+  groupKey?: string;
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, group: 'Overview' },
+  { labelKey: 'dashboard', href: '/dashboard', icon: LayoutDashboard, groupKey: 'overview' },
 
-  { label: 'Bowtie Library', href: '/bowties', icon: Library, group: 'Bowties' },
-  { label: 'New Bowtie', href: '/bowties/new', icon: Plus, group: 'Bowties' },
-  { label: 'Bowtie Workspace', href: '/bowties/bt-off-001', icon: Workflow, group: 'Bowties' },
+  { labelKey: 'bowtieLibrary', href: '/bowties', icon: Library, groupKey: 'bowties' },
+  { labelKey: 'newBowtie', href: '/bowties/new', icon: Plus, groupKey: 'bowties' },
+  { labelKey: 'bowtieWorkspace', href: '/bowties/bt-off-001', icon: Workflow, groupKey: 'bowties' },
 
-  { label: 'Barrier Register', href: '/barriers', icon: Shield, group: 'Barriers' },
-  { label: 'Barrier Health', href: '/barrier-health', icon: HeartPulse, group: 'Barriers' },
-  { label: 'Performance Standards', href: '/performance-standards', icon: Gauge, group: 'Barriers' },
+  { labelKey: 'barrierRegister', href: '/barriers', icon: Shield, groupKey: 'barriers' },
+  { labelKey: 'barrierHealth', href: '/barrier-health', icon: HeartPulse, groupKey: 'barriers' },
+  { labelKey: 'performanceStandards', href: '/performance-standards', icon: Gauge, groupKey: 'barriers' },
 
-  { label: 'Risk Register', href: '/risks', icon: TriangleAlert, group: 'Risk' },
-  { label: 'Actions', href: '/actions', icon: CheckSquare, group: 'Risk' },
-  { label: 'Verifications', href: '/verifications', icon: ClipboardCheck, group: 'Risk' },
+  { labelKey: 'riskRegister', href: '/risks', icon: TriangleAlert, groupKey: 'risk' },
+  { labelKey: 'actions', href: '/actions', icon: CheckSquare, groupKey: 'risk' },
+  { labelKey: 'verifications', href: '/verifications', icon: ClipboardCheck, groupKey: 'risk' },
 
-  { label: 'Incidents & Learnings', href: '/incidents', icon: Lightbulb, group: 'Assurance' },
-  { label: 'MOC Impact', href: '/moc', icon: GitBranch, group: 'Assurance' },
-  { label: 'Audits', href: '/audits', icon: ScrollText, group: 'Assurance' },
+  { labelKey: 'incidents', href: '/incidents', icon: Lightbulb, groupKey: 'assurance' },
+  { labelKey: 'moc', href: '/moc', icon: GitBranch, groupKey: 'assurance' },
+  { labelKey: 'audits', href: '/audits', icon: ScrollText, groupKey: 'assurance' },
 
-  { label: 'Reports', href: '/reports', icon: FileText, group: 'Library' },
-  { label: 'Templates', href: '/templates', icon: FileStack, group: 'Library' },
+  { labelKey: 'aiCoachInbox', href: '/ai-coach', icon: Sparkles, groupKey: 'assurance' },
 
-  { label: 'Settings', href: '/settings', icon: SettingsIcon, group: 'System' },
+  { labelKey: 'reports', href: '/reports', icon: FileText, groupKey: 'library' },
+  { labelKey: 'templates', href: '/templates', icon: FileStack, groupKey: 'library' },
+
+  { labelKey: 'settings', href: '/settings', icon: SettingsIcon, groupKey: 'system' },
 ];

@@ -62,6 +62,23 @@ const config: Config = {
           blue: 'hsl(var(--status-blue))',
           purple: 'hsl(var(--status-purple))',
         },
+        // STAR Design System palette (use sparingly — prefer the semantic
+        // aliases above; reach for `star-*` only when a STAR-specific
+        // surface needs the brand hue directly).
+        star: {
+          navy: 'hsl(var(--star-navy))',
+          teal: 'hsl(var(--star-teal))',
+          mint: 'hsl(var(--star-mint))',
+          'mint-soft': 'hsl(var(--star-mint-soft))',
+          sky: 'hsl(var(--star-sky))',
+          'sky-soft': 'hsl(var(--star-sky-soft))',
+          orange: 'hsl(var(--star-orange))',
+          'orange-soft': 'hsl(var(--star-orange-soft))',
+          // STAR-extension status red — see globals.css for usage rules.
+          'status-red': 'hsl(var(--star-status-red))',
+          'status-red-bg': 'hsl(var(--star-status-red-bg))',
+          'status-red-border': 'hsl(var(--star-status-red-border))',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',

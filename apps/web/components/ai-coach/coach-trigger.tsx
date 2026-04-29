@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { useMemo } from 'react';
 import { Sparkles } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +16,7 @@ import { useDemoStore } from '@/lib/store';
  * the panel state so the canvas can drive node-scoped filters.
  */
 export function CoachTrigger() {
+  const t = useTranslations('topbar');
   const pathname = usePathname();
   const allSuggestions = useDemoStore((s) => s.aiSuggestions);
   const barriers = useDemoStore((s) => s.barriers);
@@ -55,7 +57,7 @@ export function CoachTrigger() {
       }}
     >
       <Sparkles className="h-4 w-4 text-status-blue" />
-      Coach
+      {t('coach')}
       {pendingCount > 0 && (
         <Badge variant="yellow" className="-mr-1 px-1.5 py-0 text-[10px]">
           {pendingCount}

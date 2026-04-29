@@ -1,0 +1,200 @@
+{
+  "app": {
+    "title": "STAR Suite — Barrier Management",
+    "tagline": "Barrier Management",
+    "suite": "STAR Suite"
+  },
+  "nav": {
+    "groups": {
+      "overview": "Overview",
+      "bowties": "Bowties",
+      "barriers": "Barriers",
+      "risk": "Risk",
+      "assurance": "Assurance",
+      "library": "Library",
+      "system": "System"
+    },
+    "items": {
+      "dashboard": "Dashboard",
+      "bowtieLibrary": "Bowtie Library",
+      "newBowtie": "New Bowtie",
+      "bowtieWorkspace": "Bowtie Workspace",
+      "barrierRegister": "Barrier Register",
+      "barrierHealth": "Barrier Health",
+      "performanceStandards": "Performance Standards",
+      "riskRegister": "Risk Register",
+      "actions": "Actions",
+      "verifications": "Verifications",
+      "incidents": "Incidents & Learnings",
+      "moc": "MOC Impact",
+      "audits": "Audits",
+      "reports": "Reports",
+      "templates": "Templates",
+      "settings": "Settings",
+      "aiCoachInbox": "AI Coach Inbox"
+    },
+    "footer": "Demo build — no real backend"
+  },
+  "topbar": {
+    "search": "Search bowties, barriers, actions… (demo)",
+    "demoTour": "Demo Tour",
+    "coach": "Coach",
+    "loading": "Loading…",
+    "switchPersona": "Switch persona"
+  },
+  "common": {
+    "next": "Next",
+    "back": "Back",
+    "save": "Save",
+    "saveDraft": "Save draft",
+    "cancel": "Cancel",
+    "discard": "Discard",
+    "submit": "Submit",
+    "submitForReview": "Submit for review",
+    "edit": "Edit",
+    "delete": "Delete",
+    "remove": "Remove",
+    "archive": "Archive",
+    "restore": "Restore",
+    "open": "Open",
+    "close": "Close",
+    "view": "View",
+    "createNew": "Create new",
+    "clear": "Clear",
+    "clearFilters": "Clear filters",
+    "search": "Search…",
+    "readOnly": "Read-only",
+    "unassigned": "Unassigned",
+    "none": "None",
+    "loading": "Loading…",
+    "noData": "—",
+    "yesReset": "Yes, reset everything",
+    "demoBuildShort": "Demo build"
+  },
+  "status": {
+    "green": "Green",
+    "yellow": "Yellow",
+    "red": "Red",
+    "gray": "Unknown",
+    "withCompensatory": "+ compensatory"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "description": "Live snapshot from the demo seed — three industry scenarios.",
+    "kpi": {
+      "activeBowties": "Active bowties",
+      "criticalBarriers": "Critical barriers",
+      "openActions": "Open actions",
+      "overdueVerifications": "Overdue verifications",
+      "highResidualRisks": "High residual risks",
+      "bowtiesRequiringReview": "Bowties requiring review",
+      "redBarriers": "Red barriers",
+      "yellowBarriers": "Yellow barriers",
+      "inReviewHint": "{count} in review",
+      "residualThresholdHint": "Residual ≥ 8",
+      "anyReviewStageHint": "In any review stage"
+    },
+    "distribution": {
+      "title": "Barrier health distribution",
+      "totalSuffix": "total"
+    },
+    "topBarriers": {
+      "title": "Barriers needing attention",
+      "viewAll": "View all"
+    },
+    "topActions": {
+      "title": "Actions due soon",
+      "viewAll": "View all",
+      "empty": "No open actions."
+    },
+    "alert": {
+      "headline": "{count, plural, one {# item needs attention} other {# items need attention}}",
+      "actionOverdue": "Action overdue — {title}",
+      "verifsPastDue": "{count, plural, one {# verification past due} other {# verifications past due}}",
+      "reasons": {
+        "compensatedRed": "compensated red",
+        "failedTest": "failed test",
+        "underperforming": "underperforming",
+        "ownerGap": "owner gap",
+        "verificationOverdue": "verification overdue",
+        "openCriticalFinding": "open critical finding",
+        "redStatus": "red status"
+      },
+      "dismiss": "Dismiss"
+    }
+  },
+  "library": {
+    "title": "Bowtie Library",
+    "summary": "{count, plural, one {# bowtie} other {# bowties}}{archived, select, none {} other { · {archivedCount} archived}}.",
+    "createNew": "Create new",
+    "filters": {
+      "searchPlaceholder": "Search title, hazard, top event…",
+      "allScenarios": "All scenarios",
+      "scenario": "Scenario",
+      "approvalState": "Approval state",
+      "owner": "Owner",
+      "allStates": "All states",
+      "allOwners": "All owners",
+      "showArchived": "Show archived",
+      "hideArchived": "Hide archived",
+      "incArchived": "incl. archived"
+    },
+    "empty": {
+      "noBowties": "No bowties yet",
+      "noBowtiesHint": "Use Settings → Reset demo data to restore the seeded scenarios.",
+      "noMatches": "No bowties match these filters",
+      "noMatchesHint": "Try widening the search, clearing a filter, or showing archived bowties."
+    },
+    "rowActions": {
+      "view": "View",
+      "copyAsTemplate": "Copy as template",
+      "exportPdf": "Export PDF",
+      "archive": "Archive",
+      "restore": "Restore"
+    },
+    "table": {
+      "id": "ID",
+      "title": "Title",
+      "topEvent": "Top Event",
+      "owner": "Owner",
+      "state": "State",
+      "inherent": "Inherent",
+      "residual": "Residual",
+      "barriers": "Barriers",
+      "nextReview": "Next review"
+    },
+    "badges": {
+      "archived": "Archived",
+      "mocPending": "MOC pending"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Demo configuration. There is no real backend — these settings live in your browser only.",
+    "demoData": {
+      "title": "Demo data",
+      "description": "The demo persists state in localStorage under the key bowtie-demo-state-v1. Resetting restores the seeded scenarios.",
+      "resetCta": "Reset demo data"
+    },
+    "demoTools": {
+      "title": "Demo tools",
+      "description": "Run the guided walkthrough — Dashboard → Bowtie Workspace → AI Coach → Action. Takes about a minute. Will create a demo follow-up Action; reset above to revert.",
+      "restartCta": "Restart Demo Tour"
+    },
+    "aiProvider": {
+      "title": "AI Coach provider",
+      "description": "The Coach is advisory only — every accepted suggestion is logged with a named human reviewer. The provider is selected by the AI_PROVIDER env variable.",
+      "activeLabel": "Active provider:",
+      "switchCta": "Switch to Anthropic Claude",
+      "switchHelp": "Production AI requires an ANTHROPIC_API_KEY env variable. Switch is disabled until the key is configured."
+    },
+    "personas": {
+      "title": "Personas (demo RBAC)",
+      "description": "Switch persona via the top-bar dropdown to see RBAC in effect."
+    },
+    "scenarios": {
+      "title": "Loaded scenarios",
+      "demoUsers": "{count} demo users seeded."
+    }
+  }
+}

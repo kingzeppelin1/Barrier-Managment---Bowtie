@@ -2,64 +2,124 @@
 @tailwind components;
 @tailwind utilities;
 
+/* -------------------------------------------------------------------------
+ * STAR Design System tokens.
+ *
+ * Source of truth for the STAR Suite visual language. Every UI surface
+ * (web app, print reports, PDF covers) reads from these custom properties.
+ *
+ * Naming: every STAR-specific token is prefixed `--star-*`. The shadcn
+ * theme tokens (`--primary`, `--background`, etc.) are a thin alias layer
+ * over the STAR palette so existing components keep working.
+ * ----------------------------------------------------------------------- */
+
 @layer base {
   :root {
+    /* ── STAR main palette ─────────────────────────────────────────── */
+    --star-navy: 211 60% 16%;        /* #10263E — primary, headers, sidebar */
+    --star-teal: 187 89% 25%;        /* #066F7A — secondary, buttons, links, "Effective" */
+    --star-mint: 180 38% 86%;        /* #CFE6E6 — surface backgrounds, cards */
+    --star-sky: 187 64% 88%;         /* #CDEFF4 — info banners, hover */
+    --star-orange: 25 100% 71%;      /* #FFAD6C — accent, "Degraded" */
+
+    /* Soft tints — for backgrounds beneath the main hues. */
+    --star-mint-soft: 180 35% 91%;   /* #E2F0F0 */
+    --star-sky-soft: 191 60% 92%;    /* #E1F5F8 */
+    --star-orange-soft: 25 100% 76%; /* #FFBD89 */
+
+    /* ── STAR-extension status red ───────────────────────────────────
+     * The STAR main palette has no red. This token is a documented
+     * extension reserved EXCLUSIVELY for safety-critical status:
+     *   - Failed barriers (status === 'red')
+     *   - Overdue critical actions and verifications
+     *   - Approval-gate-blocking warnings
+     *
+     * NEVER use for buttons, links, branding, or non-status surfaces.
+     * Hex: #C8412C
+     *
+     * Contrast verification (WCAG 2.1):
+     *   - Against pure white (#FFFFFF):       4.95 : 1  → AA normal text ✓
+     *   - Against --star-mint-soft (#E2F0F0): 4.22 : 1  → AA Large (18pt+
+     *                                                      / 14pt bold) and
+     *                                                      AA UI components
+     *                                                      ✓; not AA for
+     *                                                      <18pt body text
+     *
+     * Practical rule: render small body copy inside red surfaces with the
+     * navy foreground, not with the red token itself. Use the red for
+     * borders, icons, badge backgrounds, and large numbers.
+     * ─────────────────────────────────────────────────────────────── */
+    --star-status-red: 9 64% 48%;        /* #C8412C */
+    --star-status-red-bg: 0 70% 95%;     /* #FBE9E9 */
+    --star-status-red-border: 0 49% 81%; /* #E8B5B5 */
+
+    /* ── shadcn / app theme aliases over STAR palette ──────────────── */
     --background: 0 0% 100%;
-    --foreground: 224 71% 4%;
+    --foreground: 211 60% 16%;
     --card: 0 0% 100%;
-    --card-foreground: 224 71% 4%;
+    --card-foreground: 211 60% 16%;
     --popover: 0 0% 100%;
-    --popover-foreground: 224 71% 4%;
-    --primary: 239 84% 60%; /* indigo-600 */
-    --primary-foreground: 210 20% 98%;
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 224 71% 4%;
-    --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%;
-    --accent: 220 14% 96%;
-    --accent-foreground: 224 71% 4%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 210 20% 98%;
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 239 84% 60%;
+    --popover-foreground: 211 60% 16%;
+
+    --primary: 187 89% 25%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 180 35% 91%;
+    --secondary-foreground: 211 60% 16%;
+
+    --muted: 180 35% 91%;
+    --muted-foreground: 211 30% 35%;
+
+    --accent: 191 60% 92%;
+    --accent-foreground: 211 60% 16%;
+
+    --destructive: 9 64% 48%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 187 25% 86%;
+    --input: 187 25% 86%;
+    --ring: 187 89% 25%;
     --radius: 0.5rem;
 
-    --status-green: 142 71% 38%;
-    --status-yellow: 38 92% 50%;
-    --status-red: 0 72% 51%;
+    /* ── Bowtie health-status palette ────────────────────────────────
+     * Internal type stays `'green' | 'yellow' | 'red' | 'gray'`.
+     * Tokens map to STAR vocabulary:
+     *   green  → STAR Teal           ("Effective")
+     *   yellow → STAR Orange         ("Degraded")
+     *   red    → STAR-extension red  ("Failed")
+     *   gray   → neutral muted       ("Unknown")
+     * blue / purple — not health states; carried for legacy nodes
+     * (DC = blue / information & control, DF = navy / human factor).
+     * ────────────────────────────────────────────────────────────── */
+    --status-green: 187 89% 25%;
+    --status-yellow: 25 100% 71%;
+    --status-red: 9 64% 48%;
     --status-gray: 220 9% 60%;
-    --status-blue: 217 91% 60%;
-    --status-purple: 262 83% 58%;
+    --status-blue: 187 89% 25%;
+    --status-purple: 211 60% 16%;
   }
 
   .dark {
-    --background: 224 71% 4%;
-    --foreground: 210 20% 98%;
-    --card: 224 71% 6%;
-    --card-foreground: 210 20% 98%;
-    --popover: 224 71% 6%;
-    --popover-foreground: 210 20% 98%;
-    --primary: 239 84% 67%;
-    --primary-foreground: 224 71% 4%;
-    --secondary: 215 28% 17%;
-    --secondary-foreground: 210 20% 98%;
-    --muted: 215 28% 17%;
-    --muted-foreground: 217 11% 65%;
-    --accent: 215 28% 17%;
-    --accent-foreground: 210 20% 98%;
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 210 20% 98%;
-    --border: 215 28% 17%;
-    --input: 215 28% 17%;
-    --ring: 239 84% 67%;
-
-    --status-green: 142 64% 45%;
-    --status-yellow: 38 92% 55%;
-    --status-red: 0 72% 60%;
-    --status-gray: 220 9% 50%;
-    --status-blue: 217 91% 65%;
-    --status-purple: 262 83% 65%;
+    /* The demo doesn't ship a dark theme; placeholders here for future work. */
+    --background: 211 60% 12%;
+    --foreground: 0 0% 98%;
+    --card: 211 60% 14%;
+    --card-foreground: 0 0% 98%;
+    --popover: 211 60% 14%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 187 89% 35%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 211 60% 22%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 211 60% 22%;
+    --muted-foreground: 187 30% 75%;
+    --accent: 211 60% 22%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 9 64% 48%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 211 60% 24%;
+    --input: 211 60% 24%;
+    --ring: 187 89% 35%;
   }
 }
 
@@ -80,6 +140,10 @@
 
 /* Print rules — DEMO-ONLY */
 @media print {
-  .no-print { display: none !important; }
-  body { background: white !important; }
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+  }
 }
